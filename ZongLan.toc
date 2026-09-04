@@ -1,0 +1,28 @@
+## Interface: 11508, 11509, 20506, 30405, 38002, 40402, 50504, 50505, 120007, 120100
+## Title: <ZongLan> |cff00BFFF角色总览|r
+## Notes: 独立的多角色信息总览插件。命令：/zl 或 /zonglan
+## Author: 苍穹之霜
+## Version: 0.1.0
+## SavedVariables: BiaoGe
+
+Locales\zhCN.lua
+Locales\zhTW.lua
+Locales\enUS.lua
+
+Templates.xml
+Libs\embeds.xml
+Init.lua
+Init2.lua
+DB.lua
+Libs\EnchantData\Enchant.lua
+
+function1.lua
+function2.lua
+
+EquipViewer.lua
+RoleOverview_core.lua
+RoleOverview.lua
+RoleOverviewSort.lua
+
+Options.lua
+
