@@ -18,7 +18,7 @@ See NOTICE.txt in this directory for source details.
 ---@diagnostic disable: duplicate-index
 local _, ns = ...
 
-BG.enchant = {}
+ZL.enchant = {}
 
 -- Data derived from TinyInspect-Classic/libs/LibItemEnchant.lua
 local EnchantSpellDB = {
@@ -725,7 +725,7 @@ local EnchantSpellDB = {
     [8550] = 1257682,
 }
 for enchantID, spellID in pairs(EnchantSpellDB) do
-    BG.enchant[enchantID] = { spellID = spellID, itemID = nil, }
+    ZL.enchant[enchantID] = { spellID = spellID, itemID = nil, }
 end
 
 -- Data derived from tdInspect/Data/Wrath/ItemEnchant.lua
@@ -736,7 +736,7 @@ local function D(enchantID, spellID, itemID)
     if itemID == 0 then
         itemID = nil
     end
-    BG.enchant[enchantID] = { spellID = spellID, itemID = itemID, }
+    ZL.enchant[enchantID] = { spellID = spellID, itemID = itemID, }
 end
 do
     D(1, 2605, 0, 2, 33155, 0)

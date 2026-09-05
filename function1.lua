@@ -1,4 +1,4 @@
-local _, ns = ...
+local AddonName, ns = ...
 
 local LibBG = ns.LibBG
 local L = ns.L
@@ -12,8 +12,8 @@ local RGB = ns.RGB
 
 local pt = print
 local RealmID = GetRealmID()
-local player = BG.playerName
-BG.After = C_Timer.After
+local player = ZL.playerName
+ZL.After = C_Timer.After
 
 ------------------函数：四舍五入------------------ 数字，小数点数
 local function Round(number, decimal_places)
@@ -51,29 +51,9 @@ local function RGB_16(name, r, g, b)
 end
 ns.RGB_16 = RGB_16
 
-local function SetColorName(name, r, g, b)
-    if not (r and g and b) then
-        return name
-    end
-    local r = format("%X", tonumber(r) * 255)
-    if r and strlen(r) == 1 then
-        r = "0" .. r
-    end
-    local g = format("%X", tonumber(g) * 255)
-    if g and strlen(g) == 1 then
-        g = "0" .. g
-    end
-    local b = format("%X", tonumber(b) * 255)
-    if b and strlen(b) == 1 then
-        b = "0" .. b
-    end
-    return "|cff" .. r .. g .. b .. name .. "|r"
-end
-ns.SetColorName = SetColorName
-
 -- 第几个BOSS
 local function BossNum(FB, b, t)
-    local tbl = BG.BossNumtbl[FB]
+    local tbl = ZL.BossNumtbl[FB]
     local bb
     if tbl[t + 1] then
         bb = tbl[t + 1] - tbl[t]
@@ -83,16 +63,6 @@ local function BossNum(FB, b, t)
     return b + tbl[t], bb, t, b
 end
 ns.BossNum = BossNum
-
-function BG.GetBossNumInfo(FB, bossNum)
-    local tbl = BG.BossNumtbl[FB]
-    for i = 1, #tbl do
-        if (not tbl[i + 1]) or (tbl[i] < bossNum and tbl[i + 1] >= bossNum) then
-            -- 第几列，第几个
-            return i, bossNum - tbl[i]
-        end
-    end
-end
 
 ------------------在文本里插入材质图标------------------
 local function AddTexture(Texture, y, coord, width)
@@ -122,11 +92,7 @@ local function AddTexture(Texture, y, coord, width)
     elseif Texture == "QUEST" then -- 黄色感叹号
         tex = "Interface\\GossipFrame\\AvailableQuestIcon"
     elseif Texture == "logo" then         
-        tex = "Interface\\AddOns\\BiaoGe\\Media\\icon\\icon"
-    elseif Texture == "BOX" then
-        tex = "Interface\\AddOns\\BiaoGe\\Media\\icon\\BOX"
-    elseif Texture == "DD" then
-        tex = "Interface\\AddOns\\BiaoGe\\Media\\icon\\DD"
+        tex = ns.Interface .. "Media\\icon\\icon.png"
     elseif Texture == "LEFT" then
         return "|A:NPE_LeftClick:0:0|a"
     elseif Texture == "RIGHT" then
@@ -169,35 +135,6 @@ local function GetClassName(classFile)
 end
 ns.GetClassName = GetClassName
 
-function BG.SetButtonAtlas(bt, atlas)
-    local tex = bt:CreateTexture()
-    tex:SetAllPoints()
-    tex:SetAtlas(atlas)
-    local tex2 = bt:CreateTexture()
-    tex2:SetAllPoints()
-    tex2:SetAtlas(atlas)
-    bt:SetNormalTexture(tex)
-    bt:SetHighlightTexture(tex2)
-end
-
-function BG.CreateRoundTexture(tex, parent, w, h)
-    local icon = CreateFrame("Frame", nil, parent or UIParent)
-    icon:SetPoint("CENTER")
-    icon:SetSize(w or 20, h or 20)
-
-    icon.tex = icon:CreateTexture(nil, "ARTWORK")
-    icon.tex:SetAllPoints()
-    icon.tex:SetTexture(tex)
-    icon.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-
-    icon.masktex = icon:CreateMaskTexture()
-    icon.masktex:SetAllPoints()
-    icon.masktex:SetTexture("Interface/CharacterFrame/TempPortraitAlphaMaskSmall")
-
-    icon.tex:AddMaskTexture(icon.masktex)
-    return icon
-end
-
 ------------------获取文字（删掉材质）------------------
 local function GetText_T(bt)
     local text
@@ -217,7 +154,7 @@ local function GetClassRGB(name, player, Alpha)
     if player then
         _, class = UnitClass(player)
     else
-        _, class = UnitClass(BG.GSN(name))
+        _, class = UnitClass(ZL.GSN(name))
     end
     local c1, c2, c3 = 1, 1, 1
     if class then
@@ -234,7 +171,7 @@ local function SetClassCFF(name, player, type)
     if player then
         _, class = UnitClass(player)
     else
-        _, class = UnitClass(BG.GSN(name))
+        _, class = UnitClass(ZL.GSN(name))
     end
     if class then
         local color = select(4, GetClassColor(class))
@@ -252,146 +189,53 @@ local function GetItemID(text)
 end
 ns.GetItemID = GetItemID
 
-------------------清除输入框的焦点------------------
-function BG.ClearFocus()
-    if BG.lastfocus then
-        BG.lastfocus:ClearFocus()
-    end
-end
-
 ------------------函数：隐藏窗口------------------   -- 0：隐藏焦点+全部框架，1：隐藏全部框架，2：隐藏除历史表格外的框架
-function BG.FrameHide(num)
+function ZL.FrameHide(num)
     if num == 0 then
-        if BG.lastfocus then
-            BG.lastfocus:ClearFocus()
+        if ZL.lastfocus then
+            ZL.lastfocus:ClearFocus()
         end
     end
-    if BG.FrameZhuangbeiList then
-        BG.FrameZhuangbeiList:Hide()
+    if ZL.FrameZhuangbeiList then
+        ZL.FrameZhuangbeiList:Hide()
     end
-    if BG.FrameMaijiaList then
-        BG.FrameMaijiaList:Hide()
+    if ZL.FrameMaijiaList then
+        ZL.FrameMaijiaList:Hide()
     end
-    if BG.FrameJineList then
-        BG.FrameJineList:Hide()
+    if ZL.FrameJineList then
+        ZL.FrameJineList:Hide()
     end
     if num ~= 2 then -- num是0就取消焦点，其他数字就不取消焦点
-        if BG.History then
-            if BG.History.List then
-                BG.History.List:Hide()
+        if ZL.History then
+            if ZL.History.List then
+                ZL.History.List:Hide()
             end
         end
     end
-    if BG.ButtonAucitonWA and BG.ButtonAucitonWA.frame then
-        BG.ButtonAucitonWA.frame:Hide()
+    if ZL.ButtonAucitonWA and ZL.ButtonAucitonWA.frame then
+        ZL.ButtonAucitonWA.frame:Hide()
     end
-    if BG.frameExportHope then
-        BG.frameExportHope:Hide()
+    if ZL.frameExportHope then
+        ZL.frameExportHope:Hide()
     end
-    if BG.frameImportHope then
-        BG.frameImportHope:Hide()
+    if ZL.frameImportHope then
+        ZL.frameImportHope:Hide()
     end
-    if BG.auctionLogFrame and BG.auctionLogFrame.changeFrame then
-        BG.auctionLogFrame.changeFrame:Hide()
+    if ZL.auctionLogFrame and ZL.auctionLogFrame.changeFrame then
+        ZL.auctionLogFrame.changeFrame:Hide()
     end
-end
-
-------------------当前表格已经有东西了------------------
-function BG.BiaoGeHavedItem(FB, _type, instanceID)
-    local startB = 1
-    local endB = Maxb[FB] + 1
-    if _type == "onlyboss" then
-        endB = Maxb[FB] - 2
-    elseif _type == "autoQingKong" then
-        startB = BG.bossPositionStartEnd[instanceID][1]
-        endB = BG.bossPositionStartEnd[instanceID][2]
-    end
-    for b = startB, endB do
-        for i = 1, BG.GetMaxi(FB, b) do
-            if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
-                if b ~= Maxb[FB] + 1 and BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() ~= "" then
-                    return true
-                end
-                if BG.Frame[FB]["boss" .. b]["maijia" .. i]:GetText() ~= "" then
-                    return true
-                end
-                if BG.Frame[FB]["boss" .. b]["jine" .. i]:GetText() ~= "" then
-                    return true
-                end
-                if BiaoGe[FB]["boss" .. b]["guanzhu" .. i] then
-                    return true
-                end
-                if BiaoGe[FB]["boss" .. b]["qiankuan" .. i] then
-                    return true
-                end
-            end
-        end
-    end
-    return false
 end
 
 ------------------隐藏提示工具------------------
 local function GameTooltip_Hide()
     GameTooltip:Hide()
 end
-function BG.GameTooltip_Hide(frame)
+function ZL.GameTooltip_Hide(frame)
     frame:SetScript("OnLeave", GameTooltip_Hide)
 end
 
-------------------查找或匹配table里的字符------------------
-do
-    function BG.FindTableString(text, table)
-        local num
-        for key, value in pairs(table) do
-            num = strfind(text, value)
-            if num then
-                return num
-            end
-        end
-    end
-
-    function BG.MatchTableString(text, table)
-        local str
-        for key, value in pairs(table) do
-            str = strmatch(text, value)
-            if str then
-                return str
-            end
-        end
-    end
-end
-------------------返回字符串里每个字符的位置------------------
-function BG.getCharacterPositions(str)
-    local positions = {}
-    local position = 1
-
-    while position <= #str do
-        local byte = string.byte(str, position)
-
-        if byte >= 0xC0 and byte <= 0xDF then
-            -- 处理两个字节的UTF-8字符
-            positions[string.sub(str, position, position + 1)] = position
-            position = position + 2
-        elseif byte >= 0xE0 and byte <= 0xEF then
-            -- 处理三个字节的UTF-8字符
-            positions[string.sub(str, position, position + 2)] = position
-            position = position + 3
-        elseif byte >= 0xF0 and byte <= 0xF7 then
-            -- 处理四个字节的UTF-8字符
-            positions[string.sub(str, position, position + 3)] = position
-            position = position + 4
-        else
-            -- 处理单字节字符和非法字节
-            positions[string.sub(str, position, position)] = position
-            position = position + 1
-        end
-    end
-
-    return positions
-end
-
 ------------------隐藏全部Tab按钮------------------
-function BG.HideTab(Buttons, Show)
+function ZL.HideTab(Buttons, Show)
     for i, v in ipairs(Buttons) do
         v:Hide()
         v:GetParent():SetEnabled(true)
@@ -401,7 +245,7 @@ function BG.HideTab(Buttons, Show)
 end
 
 ------------------计时器------------------
-function BG.OnUpdateTime(func)
+function ZL.OnUpdateTime(func)
     local updateFrame = CreateFrame("Frame")
     updateFrame.timeElapsed = 0
     updateFrame:SetScript("OnUpdate", func)
@@ -409,7 +253,7 @@ function BG.OnUpdateTime(func)
 end
 
 --[[
-BG.OnUpdateTime(function(self,elapsed)
+ZL.OnUpdateTime(function(self,elapsed)
     self.timeElapsed=self.timeElapsed+elapsed
     if self.timeElapsed then
         self:SetScript("OnUpdate",nil)
@@ -418,53 +262,40 @@ BG.OnUpdateTime(function(self,elapsed)
 end)
  ]]
 
-------------------设置按钮文本的宽度------------------
-function BG.SetButtonStringWidth(bt)
-    local t = bt:GetFontString()
-    t:SetWidth(bt:GetWidth())
-    t:SetWordWrap(false)
-end
-
-------------------按钮适应文本的宽度------------------
-function BG.SetButtonWidthForString(bt)
-    local t = bt:GetFontString()
-    bt:SetWidth(t:GetWidth())
-end
-
 ------------------菜单：点文本也能打开菜单------------------
-function BG.dropDownToggle(dropDown)
+function ZL.dropDownToggle(dropDown)
     dropDown:SetScript("OnMouseDown", function(self)
         if dropDown.isDisabled then return end
         LibBG:ToggleDropDownMenu(nil, nil, self)
-        BG.PlaySound(1)
+        ZL.PlaySound(1)
     end)
-    BG.SkinDropDown(dropDown)
+    ZL.SkinDropDown(dropDown)
 end
 
 ------------------是国服或亚服吗------------------
-function BG.IsCN()
+function ZL.IsCN()
     if GetCurrentRegionName() == "CN" or GetCurrentRegionName() == "TW" or GetCurrentRegionName() == "KR" then
         return true
     end
 end
 
 ------------------按键声音------------------
-function BG.PlaySound(id)
-    if BiaoGe.options['buttonSound'] == 1 and type(id) == "number" then
-        if BG["sound" .. id] then
+function ZL.PlaySound(id)
+    if ZongLan.options['buttonSound'] == 1 and type(id) == "number" then
+        if ZL["sound" .. id] then
             if id == 2 then
-                PlaySoundFile(BG["sound" .. id])
+                PlaySoundFile(ZL["sound" .. id])
             else
-                PlaySound(BG["sound" .. id])
+                PlaySound(ZL["sound" .. id])
             end
         end
-    elseif BiaoGe.options['tipsSound'] == 1 and type(id) == "string" then
-        if BG["sound_" .. id .. BiaoGe.options.Sound] then
-            if not PlaySoundFile(BG["sound_" .. id .. BiaoGe.options.Sound] .. ".mp3", "Master") then
-                if not PlaySoundFile(BG["sound_" .. id .. BiaoGe.options.Sound] .. ".ogg", "Master") then
-                    if BG["sound_" .. id .. "AI"] then
-                        PlaySoundFile(BG["sound_" .. id .. "AI"] .. ".mp3", "Master")
-                        PlaySoundFile(BG["sound_" .. id .. "AI"] .. ".ogg", "Master")
+    elseif ZongLan.options['tipsSound'] == 1 and type(id) == "string" then
+        if ZL["sound_" .. id .. ZongLan.options.Sound] then
+            if not PlaySoundFile(ZL["sound_" .. id .. ZongLan.options.Sound] .. ".mp3", "Master") then
+                if not PlaySoundFile(ZL["sound_" .. id .. ZongLan.options.Sound] .. ".ogg", "Master") then
+                    if ZL["sound_" .. id .. "AI"] then
+                        PlaySoundFile(ZL["sound_" .. id .. "AI"] .. ".mp3", "Master")
+                        PlaySoundFile(ZL["sound_" .. id .. "AI"] .. ".ogg", "Master")
                     end
                 end
             end
@@ -473,64 +304,22 @@ function BG.PlaySound(id)
 end
 
 ------------------按钮的文本截断------------------
-function BG.ButtonTextSetWordWrap(bt)
+function ZL.ButtonTextSetWordWrap(bt)
     local t = bt:GetFontString()
     t:SetWidth(bt:GetWidth())
     t:SetWordWrap(false)
 end
 
-------------------按钮的文本颜色------------------
-function BG.ButtonTextColor(bt, color)
-    local t = bt:GetFontString()
-    t:SetTextColor(RGB(color))
-end
-
-------------------团队标记材质------------------
-local tex = [[Interface\TargetingFrame\UI-RaidTargetingIcons]]
-local y = -3
-local RaidTargetingIcons = {
-    ["xingxing"] = { num = 1, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:0:25:0:25" .. "|t" },
-    ["dabing"] = { num = 2, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:25:50:0:25" .. "|t" },
-    ["ziling"] = { num = 3, tex = "|T" .. tex .. ":0:0:2:" .. y .. ":100:100:55:75:0:25" .. "|t" },
-    ["sanjiao"] = { num = 4, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:75:100:0:25" .. "|t" },
-    ["yueliang"] = { num = 5, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:0:25:25:50" .. "|t" },
-    ["fangkuai"] = { num = 6, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:25:50:25:50" .. "|t" },
-    ["chacha"] = { num = 7, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:50:75:25:50" .. "|t" },
-    ["kulou"] = { num = 8, tex = "|T" .. tex .. ":0:0:0:" .. y .. ":100:100:75:100:25:50" .. "|t" },
-}
-function BG.SetRaidTargetingIcons(type, name)
-    if type then
-        return "{rt" .. RaidTargetingIcons[name].num .. "}"
-    else
-        return RaidTargetingIcons[name].tex
-    end
-end
-
-function BG.GsubRaidTargetingIcons(text)
-    for k, v in pairs(RaidTargetingIcons) do
-        text = text:gsub("{rt" .. v.num .. "}", v.tex)
-    end
-    return text
-end
-
 ----------滚动到最末----------
-function BG.SetScrollBottom(scroll, child)
+function ZL.SetScrollBottom(scroll, child)
     local offset = child:GetHeight() - scroll:GetHeight()
     if offset > 0 then
         scroll:SetVerticalScroll(offset)
     end
 end
 
-----------右键菜单切换开/关----------
-function BG.DropDownListIsVisible(self)
-    local _, parent = _G.L_DropDownList1:GetPoint()
-    if parent == self and _G.L_DropDownList1:IsVisible() then
-        return true
-    end
-end
-
 ----------高亮按钮----------
-function BG.SetTextHighlightTexture(bt)
+function ZL.SetTextHighlightTexture(bt)
     local tex = bt:CreateTexture()
     tex:SetPoint("TOPLEFT", bt, "TOPLEFT", -8, 0)
     tex:SetPoint("BOTTOMRIGHT", bt, "BOTTOMRIGHT", 8, 0)
@@ -540,20 +329,13 @@ end
 
 ----------鼠标/按钮是否在右边----------
 do
-    function BG.CursorIsInRight()
-        local uiScale = UIParent:GetEffectiveScale()
-        if GetCursorPosition() / uiScale > UIParent:GetWidth() * 0.5 then
-            return true
-        end
-    end
-
-    function BG.ButtonIsInRight(self)
+    function ZL.ButtonIsInRight(self)
         if self:GetCenter() > UIParent:GetWidth() * 0.5 then
             return true
         end
     end
 
-    function BG.ButtonIsInTop(self)
+    function ZL.ButtonIsInTop(self)
         if self:GetTop() > UIParent:GetHeight() * 0.5 then
             return true
         end
@@ -561,7 +343,7 @@ do
 end
 
 ----------把time转换为时或分----------
-function BG.SecondsToTime(second, short)
+function ZL.SecondsToTime(second, short)
     local h = floor(second / 3600)
     if h >= 1 then
         return h .. (short and "h" or L["小时"])
@@ -579,13 +361,13 @@ function BG.SecondsToTime(second, short)
 end
 
 ----------是否已经拥有某物品----------
-function BG.GetItemCount(itemIDorLink)
+function ZL.GetItemCount(itemIDorLink)
     local itemID = itemIDorLink
     if not tonumber(itemIDorLink) then
         itemID = tonumber(itemIDorLink:match("item:(%d+)"))
     end
-    for _, FB in pairs(BG.FBtable) do
-        local items = BG.Loot[FB].ExchangeItems[itemID]
+    for _, FB in pairs(ZL.FBtable) do
+        local items = ZL.Loot[FB].ExchangeItems[itemID]
         if items then
             for _, itemID3 in ipairs(items) do
                 local count = GetItemCount(itemID3, true)
@@ -598,19 +380,13 @@ function BG.GetItemCount(itemIDorLink)
     return GetItemCount(itemID, true)
 end
 
-function BG.SendSystemMessage(msg)
-    SendSystemMessage(BG.STC_b1("<BiaoGe>") .. " " .. msg)
+function ZL.SendSystemMessage(msg)
+    SendSystemMessage(ZL.STC_b1("<BiaoGe>") .. " " .. msg)
 end
 
-ns.SendSystemMessage = BG.SendSystemMessage
+ns.SendSystemMessage = ZL.SendSystemMessage
 
-function BG.SetBorderAlpha(self)
-    self.Left:SetAlpha(BG.otherEditAlpha)
-    self.Right:SetAlpha(BG.otherEditAlpha)
-    self.Middle:SetAlpha(BG.otherEditAlpha)
-end
-
-function BG.FormatNumber(num, type)
+function ZL.FormatNumber(num, type)
     if not tonumber(num) or num % 1 ~= 0 then return num end
     num = tonumber(num)
     type = type or 1
@@ -680,12 +456,12 @@ function BG.FormatNumber(num, type)
     return num
 end
 
-function BG.Copy(table)
+function ZL.Copy(table)
     if type(table) == "table" then
         local t = {}
         for k, v in pairs(table) do
             if type(v) == "table" then
-                t[k] = BG.Copy(v) -- 递归拷贝子表
+                t[k] = ZL.Copy(v) -- 递归拷贝子表
             else
                 t[k] = v
             end
@@ -722,13 +498,13 @@ local info = {
     "lastChooseLFD",
     -- "",
 }
-function BG.DeletePlayerData(realmID, player)
+function ZL.DeletePlayerData(realmID, player)
     for _, key in pairs(info) do
-        if BiaoGe[key] and BiaoGe[key][realmID] then
-            BiaoGe[key][realmID][player] = nil
+        if ZongLan[key] and ZongLan[key][realmID] then
+            ZongLan[key][realmID][player] = nil
         end
     end
-    local sortDB = BiaoGe.RoleOverviewSort and BiaoGe.RoleOverviewSort[realmID]
+    local sortDB = ZongLan.RoleOverviewSort and ZongLan.RoleOverviewSort[realmID]
     if sortDB then
         for i = #sortDB, 1, -1 do
             if sortDB[i].player == player then
@@ -738,97 +514,27 @@ function BG.DeletePlayerData(realmID, player)
     end
 end
 
---获取副本tbl某个value
-function BG.GetFBinfo(FB, info)
-    for i, v in ipairs(BG.FBtable2) do
-        if FB == v.FB then
-            if v[info] then
-                return v[info]
-            elseif info == "shortName" then
-                return v.localName
-            end
-        end
-    end
-end
-
-function BG.GetSpecID()
+function ZL.GetSpecID()
     return GetSpecializationInfo(GetSpecialization())
 end
 
-function BG.SetSpecIDToLink(link)
-    if BG.IsRetail then
+function ZL.SetSpecIDToLink(link)
+    if ZL.IsRetail then
         local k = link:match("item:%d+:[%d-:]+")
         local _, s = k:find("item:%d+:%d-:%d-:%d-:%d-:%d-:%d-:%d-:")
         local _, e = k:find("item:%d+:%d-:%d-:%d-:%d-:%d-:%d-:%d-:%d-:%d-:")
-        k = k:sub(1, s) .. "80:" .. BG.GetSpecID() .. k:sub(e, #k)
+        k = k:sub(1, s) .. "80:" .. ZL.GetSpecID() .. k:sub(e, #k)
         return link:gsub("item:%d+:[%d-:]+", k)
     else
         return link
     end
 end
 
--- function BG.GsubLink(link1,link2)
+-- function ZL.GsubLink(link1,link2)
 --     return link1:gsub("(item:)%d+:[%d-:]+","%1"..link2)
 -- end
 
-local function Get(link)
-    local tbl = { strsplit(":", link) }
-    tremove(tbl, 1)
-    local itemID = tbl[1]
-    local bonus = {}
-    for i = 13, #tbl do
-        tinsert(bonus, tbl[i])
-    end
-    return itemID, bonus
-end
-function BG.IsSameItem(link1, link2)
-    if BG.IsRetail then
-        local itemID1, bonus1 = Get(link1)
-        local itemID2, bonus2 = Get(link2)
-        if not (itemID1 == itemID2 and #bonus1 == #bonus2) then
-            return
-        end
-        for i = 1, #bonus1 do
-            if bonus1[i] ~= bonus2[i] then
-                return
-            end
-        end
-        return true
-    else
-        return GetItemID(link1) == GetItemID(link2)
-    end
-end
-
-local function GetID(link)
-    if type(link) == "number" or tonumber(link) then
-        return link
-    elseif type(link) == "string" then
-        return GetItemID(link)
-    elseif type(link) == "table" then
-        return GetID(link:GetText())
-    end
-end
-function BG.IsSame(link1, link2)
-    return GetID(link1) == GetID(link2)
-end
-
-function BG.OnItemLoad(item)
-    if type(item) == "number" then
-        return Item:CreateFromItemID(item)
-    elseif type(item) == "string" then
-        return Item:CreateFromItemLink(item)
-    end
-end
-
-function BG.ClearColorCode(text)
-    return text:gsub("|c........", ""):gsub("|r", "")
-end
-
-function BG.ClearCode(text)
-    return text:gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("|cff......", ""):gsub("|r", "")
-end
-
-function BG.ValueInTable(tbl, value)
+function ZL.ValueInTable(tbl, value)
     for k, v in pairs(tbl) do
         if v == value then
             return true
@@ -836,16 +542,7 @@ function BG.ValueInTable(tbl, value)
     end
 end
 
-function BG.GetNpcID(guid)
-    if guid then
-        local npcType, _, _, _, _, npcID = strsplit("-", guid)
-        return tonumber(npcID) or 0, npcType
-    else
-        return "", ""
-    end
-end
-
-function BG.OnEnterDelay(self, func, delay, isHook)
+function ZL.OnEnterDelay(self, func, delay, isHook)
     delay = delay or .4
     local script = isHook and self.HookScript or self.SetScript
     script(self, "OnEnter", function(self)
@@ -863,7 +560,7 @@ function BG.OnEnterDelay(self, func, delay, isHook)
     end)
 end
 
-function BG.OnLeaveDelay(self, func)
+function ZL.OnLeaveDelay(self, func)
     self:SetScript("OnLeave", function(self)
         self.isOnEnter = false
         self:SetScript("OnUpdate", nil)
@@ -874,21 +571,13 @@ function BG.OnLeaveDelay(self, func)
     end)
 end
 
-function BG.IsMe(realmID, player)
-    return realmID == BG.realmID and player == BG.playerName
+function ZL.IsMe(realmID, player)
+    return realmID == ZL.realmID and player == ZL.playerName
 end
 
-function BG.SetCD(self, time)
-    if self.cd then return true end
-    self.cd = true
-    BG.After(time, function()
-        self.cd = nil
-    end)
-end
-
-function BG.GetNextWeekTime() -- 距离下周四还有多少秒
+function ZL.GetNextWeekTime() -- 距离下周四还有多少秒
     local resetDay = 2
-    if BG.IsCN() then
+    if ZL.IsCN() then
         resetDay = 4
     end
 
@@ -920,7 +609,7 @@ function BG.GetNextWeekTime() -- 距离下周四还有多少秒
     return nextThursdayTimestamp - currentTimestamp, nextThursdayTimestamp
 end
 
-function BG.GetNextDayTime() -- 距离明天7点还有多少秒
+function ZL.GetNextDayTime() -- 距离明天7点还有多少秒
     local currentTimestamp = GetServerTime()
     local tomorrow7amTimestamp
     local today = date("*t", currentTimestamp)
@@ -941,25 +630,7 @@ function BG.GetNextDayTime() -- 距离明天7点还有多少秒
     return tomorrow7amTimestamp - currentTimestamp, tomorrow7amTimestamp
 end
 
-function BG.Split(delimiter, str)
-    local result = {}
-    local delimiterLen = string.len(delimiter)
-    local startPos = 1                                              -- 每次切割的起始位置
-    while true do
-        local findPos = string.find(str, delimiter, startPos, true) -- true表示纯文本匹配（不转义）
-        if not findPos then
-            local part = string.sub(str, startPos)
-            table.insert(result, part)
-            break
-        end
-        local part = string.sub(str, startPos, findPos - 1)
-        table.insert(result, part)
-        startPos = findPos + delimiterLen
-    end
-    return unpack(result)
-end
-
-function BG.SetMixin(f, mixin)
+function ZL.SetMixin(f, mixin)
     if type(f) == "table" then
         for k, v in pairs(mixin) do
             if f.HasScript and f:HasScript(k) then
@@ -971,15 +642,15 @@ function BG.SetMixin(f, mixin)
     end
 end
 
-function BG.CreateCloseButton(f, x, y, point)
+function ZL.CreateCloseButton(f, x, y, point)
     f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    f.CloseButton:SetPoint(point or "TOPRIGHT", x or BG.IsRetail and 0 or 5, y or BG.IsRetail and 0 or 5)
+    f.CloseButton:SetPoint(point or "TOPRIGHT", x or ZL.IsRetail and 0 or 5, y or ZL.IsRetail and 0 or 5)
     f.CloseButton:SetScript("OnClick", function(self)
         f:Hide()
     end)
 end
 
-function BG.GetDiffShortName(diff)
+function ZL.GetDiffShortName(diff)
     if diff == 14 then
         return "|cff00BFFFN|r"
     elseif diff == 15 then
@@ -989,20 +660,8 @@ function BG.GetDiffShortName(diff)
     end
 end
 
-function BG.ShowNotLootTips(bossID)
-    local text = BG.notLootBossIDs[bossID]
-    local loot = C_PartyInfo.GetLootMethod()
-    if text and (loot == "master" or loot == 2) and not IsMasterLooter() then
-        BG.FrameLootMsg:AddMessage(BG.STC_y1(text))
-    end
-end
-
-function BG.IsSecret(value)
+function ZL.IsSecret(value)
     return issecretvalue and value and issecretvalue(value)
-end
-
-function BG.InBoss()
-    return issecretvalue and BG.IsRetail and C_InstanceEncounter and C_InstanceEncounter.IsEncounterInProgress()
 end
 
 -- 创建右下角可拖动的缩放按钮
@@ -1010,9 +669,9 @@ do
     local btMixin = {}
     local ag = 0.002 -- 灵敏度可调整
     local function SetValue(optionName, newScale)
-        BiaoGe.options[optionName] = newScale
-        BG.options["button" .. optionName]:SetValue(newScale)
-        BG.options["button" .. optionName].edit:SetText(newScale)
+        ZongLan.options[optionName] = newScale
+        ZL.options["button" .. optionName]:SetValue(newScale)
+        ZL.options["button" .. optionName].edit:SetText(newScale)
     end
     function btMixin:OnMouseDown(btn)
         if btn == "LeftButton" then
@@ -1020,7 +679,7 @@ do
             self.startX = GetCursorPosition()
             self.startScale = self:GetParent():GetScale()
         elseif btn == "RightButton" then
-            local newScale = BG.options[self.optionName .. "reset"]
+            local newScale = ZL.options[self.optionName .. "reset"]
             self:GetParent():SetScale(newScale)
             SetValue(self.optionName, newScale)
         end
@@ -1041,7 +700,7 @@ do
         SetValue(self.optionName, newScale)
     end
 
-    function BG.CreateFrameResizeHandle(parent, optionName, minValue, maxValue, size, x, y)
+    function ZL.CreateFrameResizeHandle(parent, optionName, minValue, maxValue, size, x, y)
         size = size or 20
         x = x or 0
         y = y or 0
@@ -1054,18 +713,14 @@ do
         bt.optionName = optionName
         bt.minValue = minValue
         bt.maxValue = maxValue
-        BG.SetMixin(bt, btMixin)
+        ZL.SetMixin(bt, btMixin)
         return bt
     end
 end
 
-function BG.IsHideTooltipKeyDown()
-    return IsShiftKeyDown() and IsControlKeyDown()
-end
-
-function BG.IsSetBestPriceKeyDown(isRightClick)
-    if BG.SetBestPrice then
-        if BG.IsML then
+function ZL.IsSetBestPriceKeyDown(isRightClick)
+    if ZL.SetBestPrice then
+        if ZL.IsML then
             return IsAltKeyDown() and IsControlKeyDown()
         else
             return isRightClick and IsAltKeyDown()
@@ -1073,24 +728,839 @@ function BG.IsSetBestPriceKeyDown(isRightClick)
     end
 end
 
-function BG.GetAddonChannelName(channel, i)
-    return channel .. ((i - 1) % BG.addonChannelCount + 1)
+------------------模板：创建蓝底高光材质------------------
+function ZL.Create_BlinkHilight(Parent, level)
+    local f = CreateFrame("Frame", nil, Parent)
+    f:SetFrameLevel(level or Parent:GetFrameLevel() - 1)
+    local texture = f:CreateTexture(nil, "BACKGROUND") -- 高亮材质
+    texture:SetAllPoints()
+    texture:SetTexture("Interface/ChatFrame/UI-ChatIcon-BlinkHilight")
+    return f
 end
 
-function BG.GetTargetBiaoGeVerIsOver(target, ver)
-    local targetVer = BG.raidBiaoGeVersion[target]
-    if targetVer and BG.GetVerNum(targetVer) >= ver then
-        return true
+------------------复原一个设置------------------
+function ZL.Once(name, dt, func)
+    if ZongLan and ZongLan.options and ZongLan.options.SearchHistory then
+        if not ZongLan.options.SearchHistory[name .. dt] then
+            func()
+            ZongLan.options.SearchHistory[name .. dt] = true
+        end
     end
-    return false
 end
 
-function BG.UpdateEditBorderColor(edit)
-    if not (BGV and BGV.UpdateEditBorderColor) then return end
-    BGV.UpdateEditBorderColor(edit)
+------------------创建滚动框------------------
+do
+    function ZL.CreateScrollFrame(parent, w, h, isEdit, alwaysHide)
+        local f = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+        f:SetBackdrop({
+            bgFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+            edgeSize = 16,
+            insets = { left = 3, right = 3, top = 3, bottom = 3 }
+        })
+        f:SetBackdropColor(0, 0, 0, 0.8)
+        f:SetBackdropBorderColor(0, 0, 0, 0)
+        if w and h then
+            f:SetSize(w, h)
+        end
+        f:EnableMouse(true)
+
+        local scroll = CreateFrame("ScrollFrame", nil, f, ZL.scrollTemplate)
+        scroll:SetWidth(f:GetWidth() - 31)
+        scroll:SetHeight(f:GetHeight() - 9)
+        scroll:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -5)
+        scroll.ScrollBar.scrollStep = ZL.scrollStep
+        f.scroll = scroll
+        ZL.CreateSrollBarBackdrop(scroll.ScrollBar)
+        ZL.HookScrollBarShowOrHide(scroll, alwaysHide)
+
+        local child
+        if isEdit then
+            child = CreateFrame("EditBox", nil, scroll)
+            child:SetWidth(scroll:GetWidth())
+            child:SetHeight(scroll:GetHeight())
+            child:SetAutoFocus(false)
+            child:EnableMouse(false)
+            child:SetMultiLine(true)
+            child:SetFont(ns.Font, 15, "OUTLINE")
+        else
+            child = CreateFrame("Frame", nil, scroll)
+            child:SetWidth(scroll:GetWidth())
+            child:SetHeight(scroll:GetHeight())
+        end
+        scroll:SetScrollChild(child)
+
+        return f, child
+    end
+
+    function ZL.CreateSrollBarBackdrop(bar)
+        if bar.ThumbButton then return end
+        local tex = bar:CreateTexture()
+        tex:SetPoint("TOPLEFT", bar.ScrollUpButton, -0, 0)
+        tex:SetPoint("BOTTOMRIGHT", bar.ScrollDownButton, 0, -0)
+        tex:SetColorTexture(0, 0, 0, 0.3)
+    end
+
+    function ZL.HookScrollBarShowOrHide(scroll, alwaysHide)
+        if scroll.ScrollBar.ThumbButton then
+            scroll.alwaysHideScrollBar = alwaysHide
+            if scroll.ScrollBar:GetOrientation() == "HORIZONTAL" then
+                ZongLan_ModernHorizontalScrollFrameTemplate_Update(scroll)
+            else
+                ZongLan_ModernScrollFrameTemplate_Update(scroll)
+            end
+            return
+        end
+        scroll.ScrollBar:Hide()
+        scroll:HookScript("OnScrollRangeChanged", function(self, xrange, yrange)
+            if alwaysHide then
+                scroll.ScrollBar:Hide()
+            else
+                if yrange == 0 then
+                    self.ScrollBar:Hide()
+                else
+                    self.ScrollBar:Show()
+                end
+            end
+        end)
+    end
 end
 
-function BG.TargetVerOver(name, verNum)
-    local ver = BG.raidBiaoGeVersion[name]
-    return ver and BG.GetVerNum(ver) >= verNum
+------------------现代滚动框模板------------------
+do
+    local c1 = { .4, .4, .4, .5 }
+    local c2 = { .8, .8, .8, .5 }
+
+    local function SetModernScrollThumbButtonColor(self, color)
+        self.Top:SetColorTexture(unpack(color))
+        self.Middle:SetColorTexture(unpack(color))
+        self.Bottom:SetColorTexture(unpack(color))
+    end
+
+    function ZongLan_ModernScrollThumbButton_UpdateShape(self)
+        local textureWidth = self.textureWidth or 8
+        local radius = math.min(textureWidth / 2, self:GetHeight() / 2)
+
+        self.Top:ClearAllPoints()
+        self.Top:SetSize(textureWidth, radius)
+        self.Top:SetPoint("TOP")
+
+        self.Middle:ClearAllPoints()
+        self.Middle:SetWidth(textureWidth)
+        self.Middle:SetPoint("TOP", 0, -radius)
+        self.Middle:SetPoint("BOTTOM", 0, radius)
+
+        self.Bottom:ClearAllPoints()
+        self.Bottom:SetSize(textureWidth, radius)
+        self.Bottom:SetPoint("BOTTOM")
+
+        if self.TopMask then
+            self.TopMask:ClearAllPoints()
+            self.TopMask:SetSize(textureWidth, radius * 2)
+            self.TopMask:SetPoint("CENTER", self.Top, "BOTTOM")
+
+            self.BottomMask:ClearAllPoints()
+            self.BottomMask:SetSize(textureWidth, radius * 2)
+            self.BottomMask:SetPoint("CENTER", self.Bottom, "TOP")
+        end
+    end
+
+    function ZongLan_ModernScrollThumbButton_UpdatePosition(bar)
+        local thumbButton = bar.ThumbButton
+        if not thumbButton then return end
+
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local ratio = 0
+        if valueRange > 0 then
+            ratio = (bar:GetValue() - minValue) / valueRange
+        end
+
+        local travel = math.max(0, bar:GetHeight() - 4 - thumbButton:GetHeight())
+        thumbButton:ClearAllPoints()
+        thumbButton:SetPoint("TOP", bar, "TOP", 0, -2 - travel * ratio)
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_Update(self)
+        local bar = self.ScrollBar
+        if not bar then return end
+
+        local trackHeight = bar:GetHeight() - 4
+        if trackHeight <= 0 then return end
+
+        local visibleExtent
+        local totalExtent
+        if self.modernVisibleExtent ~= nil and self.modernTotalExtent ~= nil then
+            visibleExtent = self.modernVisibleExtent
+            totalExtent = self.modernTotalExtent
+        else
+            visibleExtent = self:GetHeight()
+            totalExtent = visibleExtent + self:GetVerticalScrollRange()
+        end
+
+        local thumbHeight = trackHeight
+        if totalExtent and totalExtent > 0 then
+            thumbHeight = trackHeight * math.min(1, visibleExtent / totalExtent)
+        end
+
+        local minThumbHeight = self.minThumbHeight or 24
+        thumbHeight = math.max(math.min(minThumbHeight, trackHeight), thumbHeight)
+        thumbHeight = math.min(trackHeight, thumbHeight)
+        bar:GetThumbTexture():SetHeight(thumbHeight)
+        if bar.ThumbButton then
+            bar.ThumbButton:SetWidth(bar:GetWidth())
+            bar.ThumbButton:SetHeight(thumbHeight)
+            ZongLan_ModernScrollThumbButton_UpdateShape(bar.ThumbButton)
+            ZongLan_ModernScrollThumbButton_UpdatePosition(bar)
+        end
+
+        local _, maxValue = bar:GetMinMaxValues()
+        local noOverflow
+        if self.modernVisibleExtent ~= nil and self.modernTotalExtent ~= nil then
+            noOverflow = self.modernTotalExtent <= self.modernVisibleExtent
+        else
+            noOverflow = maxValue <= 1
+        end
+        if self.alwaysHideScrollBar or noOverflow then
+            bar:Hide()
+        else
+            bar:Show()
+        end
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_SetScrollExtent(self, visibleExtent, totalExtent)
+        self.modernVisibleExtent = visibleExtent
+        self.modernTotalExtent = totalExtent
+        ZongLan_ModernScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_ClearScrollExtent(self)
+        self.modernVisibleExtent = nil
+        self.modernTotalExtent = nil
+        ZongLan_ModernScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_OnLoad(self)
+        self:EnableMouse(true)
+        self:EnableMouseWheel(true)
+        self.SetScrollExtent = ZongLan_ModernScrollFrameTemplate_SetScrollExtent
+        self.ClearScrollExtent = ZongLan_ModernScrollFrameTemplate_ClearScrollExtent
+        self.ScrollBar.scrollStep = ZL.scrollStep
+        ZongLan_ModernScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_OnScrollRangeChanged(self, xRange, yRange)
+        if self.modernVisibleExtent ~= nil then
+            ZongLan_ModernScrollFrameTemplate_Update(self)
+            return
+        end
+
+        local bar = self.ScrollBar
+        yRange = math.max(0, yRange or 0)
+
+        self.modernScrollSyncing = true
+        bar:SetMinMaxValues(0, yRange)
+        local value = math.min(bar:GetValue(), yRange)
+        bar:SetValue(value)
+        self:SetVerticalScroll(value)
+        self.modernScrollSyncing = nil
+
+        ZongLan_ModernScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_OnVerticalScroll(self, offset)
+        if self.modernVisibleExtent ~= nil then return end
+        if self.modernScrollSyncing then return end
+        self.modernScrollSyncing = true
+        self.ScrollBar:SetValue(offset)
+        self.modernScrollSyncing = nil
+    end
+
+    function ZongLan_ModernScrollFrameTemplate_OnMouseWheel(self, delta)
+        local bar = self.ScrollBar
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local value = bar:GetValue() - delta * (bar.scrollStep or ZL.scrollStep or 20)
+        bar:SetValue(math.max(minValue, math.min(value, maxValue)))
+    end
+
+    function ZongLan_ModernScrollBarTemplate_OnLoad(self)
+        self:SetMinMaxValues(0, 0)
+        self:SetValue(0)
+        self:SetValueStep(1)
+        self:EnableMouseWheel(true)
+        self:Hide()
+    end
+
+    function ZongLan_ModernScrollBarTemplate_OnValueChanged(self, value)
+        local scroll = self:GetParent()
+        ZongLan_ModernScrollThumbButton_UpdatePosition(self)
+        if scroll.modernVisibleExtent ~= nil then return end
+        if scroll.modernScrollSyncing then return end
+        scroll.modernScrollSyncing = true
+        scroll:SetVerticalScroll(value)
+        scroll.modernScrollSyncing = nil
+    end
+
+    function ZongLan_ModernScrollBarTemplate_OnMouseWheel(self, delta)
+        ZongLan_ModernScrollFrameTemplate_OnMouseWheel(self:GetParent(), delta)
+    end
+
+    function ZongLan_ModernScrollBarTemplate_OnEnter(self)
+        -- self:GetThumbTexture():SetColorTexture(unpack(c2))
+    end
+
+    function ZongLan_ModernScrollBarTemplate_OnLeave(self)
+        -- self:GetThumbTexture():SetColorTexture(unpack(c1))
+    end
+
+    function ZongLan_ModernScrollTrackButton_OnLoad(self)
+        self:SetFrameLevel(self:GetParent():GetFrameLevel() + 1)
+        self:EnableMouseWheel(true)
+    end
+
+    function ZongLan_ModernScrollTrackButton_OnMouseDown(self, button)
+        if button ~= "LeftButton" then return end
+
+        local bar = self:GetParent()
+        local thumbButton = bar.ThumbButton
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local travel = bar:GetHeight() - 4 - thumbButton:GetHeight()
+        local top = bar:GetTop()
+        if travel <= 0 or valueRange <= 0 or not top then return end
+
+        local _, cursorY = GetCursorPosition()
+        cursorY = cursorY / bar:GetEffectiveScale()
+        local ratio = (top - 2 - thumbButton:GetHeight() / 2 - cursorY) / travel
+        ratio = math.max(0, math.min(ratio, 1))
+        bar:SetValue(minValue + ratio * valueRange)
+    end
+
+    function ZongLan_ModernScrollTrackButton_OnMouseWheel(self, delta)
+        ZongLan_ModernScrollBarTemplate_OnMouseWheel(self:GetParent(), delta)
+    end
+
+    local function ModernScrollThumbButton_StopDragging(self)
+        self.modernDragging = nil
+        self.modernStartCursorY = nil
+        self.modernStartValue = nil
+        self:SetScript("OnUpdate", nil)
+        SetModernScrollThumbButtonColor(self, self:IsMouseOver() and c2 or c1)
+    end
+
+    local function ModernScrollThumbButton_OnUpdate(self)
+        if not IsMouseButtonDown("LeftButton") then
+            ModernScrollThumbButton_StopDragging(self)
+            return
+        end
+
+        local bar = self:GetParent()
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local travel = (bar:GetHeight() - 4 - self:GetHeight()) * bar:GetEffectiveScale()
+        if travel <= 0 or valueRange <= 0 then return end
+
+        local _, cursorY = GetCursorPosition()
+        local deltaY = cursorY - self.modernStartCursorY
+        local value = self.modernStartValue - deltaY / travel * valueRange
+        bar:SetValue(math.max(minValue, math.min(value, maxValue)))
+    end
+
+    function ZongLan_ModernScrollThumbButton_OnLoad(self)
+        local bar = self:GetParent()
+        self:SetFrameLevel(bar:GetFrameLevel() + 2)
+        self:SetWidth(bar:GetWidth())
+
+        self.TopMask = self:CreateMaskTexture()
+        self.TopMask:SetTexture("Interface/CharacterFrame/TempPortraitAlphaMaskSmall")
+        self.Top:AddMaskTexture(self.TopMask)
+
+        self.BottomMask = self:CreateMaskTexture()
+        self.BottomMask:SetTexture("Interface/CharacterFrame/TempPortraitAlphaMaskSmall")
+        self.Bottom:AddMaskTexture(self.BottomMask)
+
+        ZongLan_ModernScrollThumbButton_UpdateShape(self)
+        ZongLan_ModernScrollThumbButton_UpdatePosition(bar)
+        SetModernScrollThumbButtonColor(self, c1)
+    end
+
+    function ZongLan_ModernScrollThumbButton_OnEnter(self)
+        if not self.modernDragging then
+            SetModernScrollThumbButtonColor(self, c2)
+        end
+    end
+
+    function ZongLan_ModernScrollThumbButton_OnLeave(self)
+        if not self.modernDragging then
+            SetModernScrollThumbButtonColor(self, c1)
+        end
+    end
+
+    function ZongLan_ModernScrollThumbButton_OnMouseDown(self, button)
+        if button ~= "LeftButton" then return end
+
+        local _, cursorY = GetCursorPosition()
+        self.modernDragging = true
+        self.modernStartCursorY = cursorY
+        self.modernStartValue = self:GetParent():GetValue()
+        self:SetScript("OnUpdate", ModernScrollThumbButton_OnUpdate)
+    end
+
+    function ZongLan_ModernScrollThumbButton_OnMouseUp(self, button)
+        if button == "LeftButton" and self.modernDragging then
+            ModernScrollThumbButton_StopDragging(self)
+        end
+    end
+
+    local function SetModernHorizontalScrollThumbButtonColor(self, color)
+        self.Left:SetColorTexture(unpack(color))
+        self.Middle:SetColorTexture(unpack(color))
+        self.Right:SetColorTexture(unpack(color))
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_UpdateShape(self)
+        local textureHeight = self.textureHeight or 8
+        local radius = math.min(textureHeight / 2, self:GetWidth() / 2)
+
+        self.Left:ClearAllPoints()
+        self.Left:SetSize(radius, textureHeight)
+        self.Left:SetPoint("LEFT")
+
+        self.Middle:ClearAllPoints()
+        self.Middle:SetHeight(textureHeight)
+        self.Middle:SetPoint("LEFT", radius, 0)
+        self.Middle:SetPoint("RIGHT", -radius, 0)
+
+        self.Right:ClearAllPoints()
+        self.Right:SetSize(radius, textureHeight)
+        self.Right:SetPoint("RIGHT")
+
+        if self.LeftMask then
+            self.LeftMask:ClearAllPoints()
+            self.LeftMask:SetSize(radius * 2, textureHeight)
+            self.LeftMask:SetPoint("CENTER", self.Left, "RIGHT")
+
+            self.RightMask:ClearAllPoints()
+            self.RightMask:SetSize(radius * 2, textureHeight)
+            self.RightMask:SetPoint("CENTER", self.Right, "LEFT")
+        end
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_UpdatePosition(bar)
+        local thumbButton = bar.ThumbButton
+        if not thumbButton then return end
+
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local ratio = 0
+        if valueRange > 0 then
+            ratio = (bar:GetValue() - minValue) / valueRange
+        end
+
+        local travel = math.max(0, bar:GetWidth() - 4 - thumbButton:GetWidth())
+        thumbButton:ClearAllPoints()
+        thumbButton:SetPoint("LEFT", bar, "LEFT", 2 + travel * ratio, 0)
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+        local bar = self.ScrollBar
+        if not bar then return end
+
+        local trackWidth = bar:GetWidth() - 4
+        if trackWidth <= 0 then return end
+
+        local visibleExtent
+        local totalExtent
+        if self.modernVisibleExtent ~= nil and self.modernTotalExtent ~= nil then
+            visibleExtent = self.modernVisibleExtent
+            totalExtent = self.modernTotalExtent
+        else
+            visibleExtent = self:GetWidth()
+            totalExtent = visibleExtent + self:GetHorizontalScrollRange()
+        end
+
+        local thumbWidth = trackWidth
+        if totalExtent and totalExtent > 0 then
+            thumbWidth = trackWidth * math.min(1, visibleExtent / totalExtent)
+        end
+
+        local minThumbWidth = self.minThumbWidth or 24
+        thumbWidth = math.max(math.min(minThumbWidth, trackWidth), thumbWidth)
+        thumbWidth = math.min(trackWidth, thumbWidth)
+        bar:GetThumbTexture():SetWidth(thumbWidth)
+        if bar.ThumbButton then
+            bar.ThumbButton:SetWidth(thumbWidth)
+            bar.ThumbButton:SetHeight(bar:GetHeight())
+            ZongLan_ModernHorizontalScrollThumbButton_UpdateShape(bar.ThumbButton)
+            ZongLan_ModernHorizontalScrollThumbButton_UpdatePosition(bar)
+        end
+
+        local _, maxValue = bar:GetMinMaxValues()
+        local noOverflow
+        if self.modernVisibleExtent ~= nil and self.modernTotalExtent ~= nil then
+            noOverflow = self.modernTotalExtent <= self.modernVisibleExtent
+        else
+            noOverflow = maxValue <= 1
+        end
+        if self.alwaysHideScrollBar or noOverflow then
+            bar:Hide()
+        else
+            bar:Show()
+        end
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_SetScrollExtent(self, visibleExtent, totalExtent)
+        self.modernVisibleExtent = visibleExtent
+        self.modernTotalExtent = totalExtent
+        ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_ClearScrollExtent(self)
+        self.modernVisibleExtent = nil
+        self.modernTotalExtent = nil
+        ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_OnLoad(self)
+        self:EnableMouse(true)
+        self:EnableMouseWheel(true)
+        self.SetScrollExtent = ZongLan_ModernHorizontalScrollFrameTemplate_SetScrollExtent
+        self.ClearScrollExtent = ZongLan_ModernHorizontalScrollFrameTemplate_ClearScrollExtent
+        self.ScrollBar.scrollStep = ZL.scrollStep
+        ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_OnScrollRangeChanged(self, xRange, yRange)
+        if self.modernVisibleExtent ~= nil then
+            ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+            return
+        end
+
+        local bar = self.ScrollBar
+        xRange = math.max(0, xRange or 0)
+
+        self.modernScrollSyncing = true
+        bar:SetMinMaxValues(0, xRange)
+        local value = math.min(bar:GetValue(), xRange)
+        bar:SetValue(value)
+        self:SetHorizontalScroll(value)
+        self.modernScrollSyncing = nil
+
+        ZongLan_ModernHorizontalScrollFrameTemplate_Update(self)
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_OnHorizontalScroll(self, offset)
+        if self.modernVisibleExtent ~= nil then return end
+        if self.modernScrollSyncing then return end
+        self.modernScrollSyncing = true
+        self.ScrollBar:SetValue(offset)
+        self.modernScrollSyncing = nil
+    end
+
+    function ZongLan_ModernHorizontalScrollFrameTemplate_OnMouseWheel(self, delta)
+        local bar = self.ScrollBar
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local value = bar:GetValue() - delta * (bar.scrollStep or ZL.scrollStep or 20)
+        bar:SetValue(math.max(minValue, math.min(value, maxValue)))
+    end
+
+    function ZongLan_ModernHorizontalScrollBarTemplate_OnLoad(self)
+        self:SetMinMaxValues(0, 0)
+        self:SetValue(0)
+        self:SetValueStep(1)
+        self:EnableMouseWheel(true)
+        self:Hide()
+    end
+
+    function ZongLan_ModernHorizontalScrollBarTemplate_OnValueChanged(self, value)
+        local scroll = self:GetParent()
+        ZongLan_ModernHorizontalScrollThumbButton_UpdatePosition(self)
+        if scroll.modernVisibleExtent ~= nil then return end
+        if scroll.modernScrollSyncing then return end
+        scroll.modernScrollSyncing = true
+        scroll:SetHorizontalScroll(value)
+        scroll.modernScrollSyncing = nil
+    end
+
+    function ZongLan_ModernHorizontalScrollBarTemplate_OnMouseWheel(self, delta)
+        ZongLan_ModernHorizontalScrollFrameTemplate_OnMouseWheel(self:GetParent(), delta)
+    end
+
+    function ZongLan_ModernHorizontalScrollTrackButton_OnLoad(self)
+        self:SetFrameLevel(self:GetParent():GetFrameLevel() + 1)
+        self:EnableMouseWheel(true)
+    end
+
+    function ZongLan_ModernHorizontalScrollTrackButton_OnMouseDown(self, button)
+        if button ~= "LeftButton" then return end
+
+        local bar = self:GetParent()
+        local thumbButton = bar.ThumbButton
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local travel = bar:GetWidth() - 4 - thumbButton:GetWidth()
+        local left = bar:GetLeft()
+        if travel <= 0 or valueRange <= 0 or not left then return end
+
+        local cursorX = GetCursorPosition()
+        cursorX = cursorX / bar:GetEffectiveScale()
+        local ratio = (cursorX - left - 2 - thumbButton:GetWidth() / 2) / travel
+        ratio = math.max(0, math.min(ratio, 1))
+        bar:SetValue(minValue + ratio * valueRange)
+    end
+
+    function ZongLan_ModernHorizontalScrollTrackButton_OnMouseWheel(self, delta)
+        ZongLan_ModernHorizontalScrollBarTemplate_OnMouseWheel(self:GetParent(), delta)
+    end
+
+    function ZongLan_ModernHorizontalScrollBarTemplate_OnSizeChanged(self)
+        ZongLan_ModernHorizontalScrollFrameTemplate_Update(self:GetParent())
+    end
+
+    local function ModernHorizontalScrollThumbButton_StopDragging(self)
+        self.modernDragging = nil
+        self.modernStartCursorX = nil
+        self.modernStartValue = nil
+        self:SetScript("OnUpdate", nil)
+        SetModernHorizontalScrollThumbButtonColor(self, self:IsMouseOver() and c2 or c1)
+    end
+
+    local function ModernHorizontalScrollThumbButton_OnUpdate(self)
+        if not IsMouseButtonDown("LeftButton") then
+            ModernHorizontalScrollThumbButton_StopDragging(self)
+            return
+        end
+
+        local bar = self:GetParent()
+        local minValue, maxValue = bar:GetMinMaxValues()
+        local valueRange = maxValue - minValue
+        local travel = (bar:GetWidth() - 4 - self:GetWidth()) * bar:GetEffectiveScale()
+        if travel <= 0 or valueRange <= 0 then return end
+
+        local cursorX = GetCursorPosition()
+        local deltaX = cursorX - self.modernStartCursorX
+        local value = self.modernStartValue + deltaX / travel * valueRange
+        bar:SetValue(math.max(minValue, math.min(value, maxValue)))
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_OnLoad(self)
+        local bar = self:GetParent()
+        self:SetFrameLevel(bar:GetFrameLevel() + 2)
+        self:SetHeight(bar:GetHeight())
+
+        self.LeftMask = self:CreateMaskTexture()
+        self.LeftMask:SetTexture("Interface/CharacterFrame/TempPortraitAlphaMaskSmall")
+        self.Left:AddMaskTexture(self.LeftMask)
+
+        self.RightMask = self:CreateMaskTexture()
+        self.RightMask:SetTexture("Interface/CharacterFrame/TempPortraitAlphaMaskSmall")
+        self.Right:AddMaskTexture(self.RightMask)
+
+        ZongLan_ModernHorizontalScrollThumbButton_UpdateShape(self)
+        ZongLan_ModernHorizontalScrollThumbButton_UpdatePosition(bar)
+        SetModernHorizontalScrollThumbButtonColor(self, c1)
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_OnEnter(self)
+        if not self.modernDragging then
+            SetModernHorizontalScrollThumbButtonColor(self, c2)
+        end
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_OnLeave(self)
+        if not self.modernDragging then
+            SetModernHorizontalScrollThumbButtonColor(self, c1)
+        end
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_OnMouseDown(self, button)
+        if button ~= "LeftButton" then return end
+
+        local cursorX = GetCursorPosition()
+        self.modernDragging = true
+        self.modernStartCursorX = cursorX
+        self.modernStartValue = self:GetParent():GetValue()
+        self:SetScript("OnUpdate", ModernHorizontalScrollThumbButton_OnUpdate)
+    end
+
+    function ZongLan_ModernHorizontalScrollThumbButton_OnMouseUp(self, button)
+        if button == "LeftButton" and self.modernDragging then
+            ModernHorizontalScrollThumbButton_StopDragging(self)
+        end
+    end
+end
+
+local r, g, b = GetClassColor(select(2, UnitClass("player")))
+local blackup = CreateColor(.3, .3, .3, .7)
+local blackdown = CreateColor(0, 0, 0, .7)
+local classColorup = CreateColor(r, g, b, .7)
+local classColordown = CreateColor(r, g, b, .1)
+local disColorup = CreateColor(.5, .5, .5, .7)
+local disColordown = CreateColor(0, 0, 0, .3)
+local borderAlpha = 1
+function ZL.CreateButton(parent)
+    local bt = CreateFrame("Button", nil, parent, "BackdropTemplate")
+    bt:SetBackdrop({
+        edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+        edgeSize = 1,
+    })
+    bt:SetBackdropBorderColor(0, 0, 0, borderAlpha)
+    bt.bg = bt:CreateTexture(nil, "BACKGROUND")
+    bt.bg:SetAllPoints()
+    bt.bg:SetTexture("Interface\\Buttons\\WHITE8x8")
+    bt.bg:SetGradient("VERTICAL", blackdown, blackup)
+    local t = bt:CreateFontString()
+    t:SetAllPoints()
+    t:SetTextColor(1, .82, 0)
+    t:SetFont(ns.Font, 15, "OUTLINE")
+    bt:SetFontString(t)
+
+    hooksecurefunc(bt, "SetScript", function(arg1, arg2, ...)
+        if arg2 == "OnEnter" then
+            bt:HookScript("OnEnter", function()
+                bt.bg:SetGradient("VERTICAL", classColordown, classColorup)
+                bt:SetBackdropBorderColor(r, g, b, borderAlpha)
+                bt:GetFontString():SetTextColor(1, 1, 1)
+            end)
+        elseif arg2 == "OnLeave" then
+            bt:HookScript("OnLeave", function()
+                GameTooltip:Hide()
+                bt.bg:SetGradient("VERTICAL", blackdown, blackup)
+                bt:SetBackdropBorderColor(0, 0, 0, borderAlpha)
+                bt:GetFontString():SetTextColor(1, .82, 0)
+            end)
+        end
+    end)
+    hooksecurefunc(bt, "SetEnabled", function(arg1, arg2, ...)
+        if arg2 == true then
+            bt.bg:SetGradient("VERTICAL", blackdown, blackup)
+            bt:GetFontString():SetTextColor(1, .82, 0)
+        elseif arg2 == false then
+            bt.bg:SetGradient("VERTICAL", disColordown, disColorup)
+            bt:GetFontString():SetTextColor(.5, .5, .5)
+        end
+    end)
+    function bt:Disable()
+        self:SetEnabled(false)
+    end
+
+    function bt:Enable()
+        self:SetEnabled(true)
+    end
+
+    bt:SetScript("OnEnter", nil)
+    bt:SetScript("OnLeave", nil)
+    return bt
+end
+
+function ZL.SkinDropDown(dropDown)
+    local borderAlpha = 1
+    local bt = dropDown.Button
+    bt:Hide()
+    dropDown.Left:Hide()
+    dropDown.Middle:Hide()
+    dropDown.Right:Hide()
+    dropDown.Text:ClearAllPoints()
+    dropDown.Text:SetPoint("TOPLEFT", 18, -8)
+    dropDown.Text:SetPoint("TOPRIGHT", -40, -8)
+    dropDown.Text:SetJustifyH("RIGHT")
+
+    local f = CreateFrame("Frame", nil, dropDown, "BackdropTemplate")
+    f:SetBackdrop({
+        bgFile = "Interface/ChatFrame/ChatFrameBackground",
+        edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+        edgeSize = 1,
+
+    })
+    f:SetBackdropColor(0, 0, 0, 0.5)
+    f:SetBackdropBorderColor(.3, .3, .3, borderAlpha)
+    f:SetPoint("TOPLEFT", 15, 0)
+    f:SetPoint("BOTTOMRIGHT", -15, 7)
+    f:SetFrameLevel(dropDown:GetFrameLevel())
+    dropDown.bg = f
+
+    local tex = dropDown:CreateTexture("OVERLAY")
+    tex:SetPoint("TOPLEFT", bt, "TOPLEFT", 2, -2)
+    tex:SetPoint("BOTTOMRIGHT", bt, "BOTTOMRIGHT", -2, 2)
+    tex:SetTexture("Interface/AddOns/" .. AddonName .. "/Media/textures/arrow.tga")
+    tex:SetRotation(math.pi)
+    dropDown:HookScript("OnEnter", function(self)
+        if dropDown.isDisabled then return end
+        f:SetBackdropColor(r, g, b, 0.3)
+        f:SetBackdropBorderColor(r, g, b, borderAlpha)
+    end)
+    dropDown:HookScript("OnLeave", function(self)
+        if dropDown.isDisabled then return end
+        f:SetBackdropColor(0, 0, 0, 0.5)
+        f:SetBackdropBorderColor(.3, .3, .3, borderAlpha)
+    end)
+end
+
+function ZL.CreateHighLightAnim(self, w, h)
+    local f = CreateFrame("Frame", nil, self)
+    f:SetPoint("CENTER")
+    f:SetSize(self:GetSize())
+    local tex = f:CreateTexture()
+    tex:SetSize(f:GetWidth() + (w or 0), f:GetHeight() + (h or 0))
+    tex:SetPoint("CENTER", 0, -1)
+    tex:SetAtlas("ShipMission_FollowerListButton-Select")
+    local tex = f:CreateTexture()
+    tex:SetSize(f:GetWidth(), f:GetHeight())
+    tex:SetPoint("CENTER", 0, -1)
+    tex:SetAtlas("GarrMission_ListGlow-Select")
+
+    f.flashGroup = f:CreateAnimationGroup()
+    for i = 1, 3 do
+        local fade = f.flashGroup:CreateAnimation('Alpha')
+        fade:SetChildKey('flash')
+        fade:SetOrder(i * 2)
+        fade:SetDuration(.4)
+        fade:SetFromAlpha(.1)
+        fade:SetToAlpha(1)
+
+        local fade = f.flashGroup:CreateAnimation('Alpha')
+        fade:SetChildKey('flash')
+        fade:SetOrder(i * 2 + 1)
+        fade:SetDuration(.4)
+        fade:SetFromAlpha(1)
+        fade:SetToAlpha(.1)
+    end
+    f.flashGroup:Play()
+    f.flashGroup:SetLooping("REPEAT")
+    return f
+end
+
+local editMixin = {}
+function editMixin:HasStickyFocus()
+    return true
+end
+
+function ZL.SetEditStickyFocus(edit)
+    edit.HasStickyFocus = editMixin.HasStickyFocus
+end
+
+function ZL.SetEditBaseClass(edit, notClearOnRightButton)
+    edit:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    edit:HookScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+    end)
+    edit:HookScript("OnEditFocusGained", function(self)
+        ZL.lastfocus = self
+    end)
+    if not notClearOnRightButton then
+        edit:HookScript("OnMouseDown", function(self, button)
+            if button == "RightButton" then
+                self:SetEnabled(false)
+                self:SetText("")
+            end
+        end)
+        edit:HookScript("OnMouseUp", function(self, enter)
+            if enter == "RightButton" then
+                self:SetEnabled(true)
+            end
+        end)
+    end
+    ZL.SetEditStickyFocus(edit)
 end

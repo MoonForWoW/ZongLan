@@ -1,5 +1,5 @@
 <Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-	<EditBox name="BiaoGe_InputBoxScriptTemplate" enableMouse="true" virtual="true">
+	<EditBox name="ZongLan_InputBoxScriptTemplate" enableMouse="true" virtual="true">
 		<Scripts>
 			<OnTabPressed function="EditBox_OnTabPressed"/>
 			<OnEscapePressed function="EditBox_ClearFocus"/>
@@ -8,7 +8,7 @@
 		</Scripts>
 	</EditBox>
 
-	<EditBox name="BiaoGe_InputBoxVisualTemplate" virtual="true">
+	<EditBox name="ZongLan_InputBoxVisualTemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture parentKey="Right" file="interface/common/commonsearch">
@@ -38,14 +38,14 @@
 		<!-- <FontString inherits="ChatFontNormal"/> -->
 	</EditBox>
 
-	<!-- <EditBox name="BiaoGe_InputBoxTemplate" inherits="BiaoGe_InputBoxScriptTemplate, BiaoGe_InputBoxVisualTemplate" virtual="true"> -->
-	<EditBox name="BiaoGe_InputBoxTemplate" inherits="InputBoxScriptTemplate, InputBoxVisualTemplate" virtual="true">
+	<!-- <EditBox name="ZongLan_InputBoxTemplate" inherits="ZongLan_InputBoxScriptTemplate, ZongLan_InputBoxVisualTemplate" virtual="true"> -->
+	<EditBox name="ZongLan_InputBoxTemplate" inherits="InputBoxScriptTemplate, InputBoxVisualTemplate" virtual="true">
 		<Scripts>
-			<OnLoad function="BiaoGe_InputBoxTemplate_OnLoad"/>
+			<OnLoad function="ZongLan_InputBoxTemplate_OnLoad"/>
 		</Scripts>
 	</EditBox>
 
-	<EditBox name="BiaoGe_InputBoxInstructionsTemplate" inherits="BiaoGe_InputBoxTemplate" virtual="true">
+	<EditBox name="ZongLan_InputBoxInstructionsTemplate" inherits="ZongLan_InputBoxTemplate" virtual="true">
 		<!--KeyValues>
 				Optional
 				<KeyValue key="disabledColor" value="GRAY_FONT_COLOR" type="global"/>
@@ -66,7 +66,7 @@
 		<FontString inherits="GameFontHighlightSmall"/>
 	</EditBox>
 
-	<EditBox name="BiaoGe_SearchBoxTemplate" inherits="BiaoGe_InputBoxInstructionsTemplate" autoFocus="false" virtual="true">
+	<EditBox name="ZongLan_SearchBoxTemplate" inherits="ZongLan_InputBoxInstructionsTemplate" autoFocus="false" virtual="true">
 		<Layers>
 			<Layer level="OVERLAY">
 				<Texture name="$parentSearchIcon" file="Interface\Common\UI-Searchbox-Icon" parentKey="searchIcon">
@@ -124,7 +124,7 @@
 		</Scripts>
 	</EditBox>
 
-	<Slider name="BiaoGe_ModernScrollBarTemplate" orientation="VERTICAL" enableMouse="true" virtual="true">
+	<Slider name="ZongLan_ModernScrollBarTemplate" orientation="VERTICAL" enableMouse="true" virtual="true">
 		<Size x="14" y="100"/>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -144,9 +144,9 @@
 		<Frames>
 			<Button parentKey="TrackButton" enableMouse="true" setAllPoints="true">
 				<Scripts>
-					<OnLoad function="BiaoGe_ModernScrollTrackButton_OnLoad"/>
-					<OnMouseDown function="BiaoGe_ModernScrollTrackButton_OnMouseDown"/>
-					<OnMouseWheel function="BiaoGe_ModernScrollTrackButton_OnMouseWheel"/>
+					<OnLoad function="ZongLan_ModernScrollTrackButton_OnLoad"/>
+					<OnMouseDown function="ZongLan_ModernScrollTrackButton_OnMouseDown"/>
+					<OnMouseWheel function="ZongLan_ModernScrollTrackButton_OnMouseWheel"/>
 				</Scripts>
 			</Button>
 			<Button parentKey="ThumbButton" enableMouse="true">
@@ -175,27 +175,27 @@
 					</Layer>
 				</Layers>
 				<Scripts>
-					<OnLoad function="BiaoGe_ModernScrollThumbButton_OnLoad"/>
-					<OnEnter function="BiaoGe_ModernScrollThumbButton_OnEnter"/>
-					<OnLeave function="BiaoGe_ModernScrollThumbButton_OnLeave"/>
-					<OnMouseDown function="BiaoGe_ModernScrollThumbButton_OnMouseDown"/>
-					<OnMouseUp function="BiaoGe_ModernScrollThumbButton_OnMouseUp"/>
-					<OnSizeChanged function="BiaoGe_ModernScrollThumbButton_UpdateShape"/>
+					<OnLoad function="ZongLan_ModernScrollThumbButton_OnLoad"/>
+					<OnEnter function="ZongLan_ModernScrollThumbButton_OnEnter"/>
+					<OnLeave function="ZongLan_ModernScrollThumbButton_OnLeave"/>
+					<OnMouseDown function="ZongLan_ModernScrollThumbButton_OnMouseDown"/>
+					<OnMouseUp function="ZongLan_ModernScrollThumbButton_OnMouseUp"/>
+					<OnSizeChanged function="ZongLan_ModernScrollThumbButton_UpdateShape"/>
 				</Scripts>
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnLoad function="BiaoGe_ModernScrollBarTemplate_OnLoad"/>
-			<OnValueChanged function="BiaoGe_ModernScrollBarTemplate_OnValueChanged"/>
-			<OnMouseWheel function="BiaoGe_ModernScrollBarTemplate_OnMouseWheel"/>
-			<OnEnter function="BiaoGe_ModernScrollBarTemplate_OnEnter"/>
-			<OnLeave function="BiaoGe_ModernScrollBarTemplate_OnLeave"/>
+			<OnLoad function="ZongLan_ModernScrollBarTemplate_OnLoad"/>
+			<OnValueChanged function="ZongLan_ModernScrollBarTemplate_OnValueChanged"/>
+			<OnMouseWheel function="ZongLan_ModernScrollBarTemplate_OnMouseWheel"/>
+			<OnEnter function="ZongLan_ModernScrollBarTemplate_OnEnter"/>
+			<OnLeave function="ZongLan_ModernScrollBarTemplate_OnLeave"/>
 		</Scripts>
 	</Slider>
 
-	<ScrollFrame name="BiaoGe_ModernScrollFrameTemplate" enableMouse="true" virtual="true">
+	<ScrollFrame name="ZongLan_ModernScrollFrameTemplate" enableMouse="true" virtual="true">
 		<Frames>
-			<Slider parentKey="ScrollBar" inherits="BiaoGe_ModernScrollBarTemplate">
+			<Slider parentKey="ScrollBar" inherits="ZongLan_ModernScrollBarTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="6" y="0"/>
 					<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="8" y="0"/>
@@ -203,16 +203,16 @@
 			</Slider>
 		</Frames>
 		<Scripts>
-			<OnLoad function="BiaoGe_ModernScrollFrameTemplate_OnLoad"/>
-			<OnScrollRangeChanged function="BiaoGe_ModernScrollFrameTemplate_OnScrollRangeChanged"/>
-			<OnVerticalScroll function="BiaoGe_ModernScrollFrameTemplate_OnVerticalScroll"/>
-			<OnMouseWheel function="BiaoGe_ModernScrollFrameTemplate_OnMouseWheel"/>
-			<OnSizeChanged function="BiaoGe_ModernScrollFrameTemplate_Update"/>
-			<OnShow function="BiaoGe_ModernScrollFrameTemplate_Update"/>
+			<OnLoad function="ZongLan_ModernScrollFrameTemplate_OnLoad"/>
+			<OnScrollRangeChanged function="ZongLan_ModernScrollFrameTemplate_OnScrollRangeChanged"/>
+			<OnVerticalScroll function="ZongLan_ModernScrollFrameTemplate_OnVerticalScroll"/>
+			<OnMouseWheel function="ZongLan_ModernScrollFrameTemplate_OnMouseWheel"/>
+			<OnSizeChanged function="ZongLan_ModernScrollFrameTemplate_Update"/>
+			<OnShow function="ZongLan_ModernScrollFrameTemplate_Update"/>
 		</Scripts>
 	</ScrollFrame>
 
-	<Slider name="BiaoGe_ModernHorizontalScrollBarTemplate" orientation="HORIZONTAL" enableMouse="true" virtual="true">
+	<Slider name="ZongLan_ModernHorizontalScrollBarTemplate" orientation="HORIZONTAL" enableMouse="true" virtual="true">
 		<Size x="100" y="14"/>
 		<Layers>
 			<Layer level="BACKGROUND">
@@ -232,9 +232,9 @@
 		<Frames>
 			<Button parentKey="TrackButton" enableMouse="true" setAllPoints="true">
 				<Scripts>
-					<OnLoad function="BiaoGe_ModernHorizontalScrollTrackButton_OnLoad"/>
-					<OnMouseDown function="BiaoGe_ModernHorizontalScrollTrackButton_OnMouseDown"/>
-					<OnMouseWheel function="BiaoGe_ModernHorizontalScrollTrackButton_OnMouseWheel"/>
+					<OnLoad function="ZongLan_ModernHorizontalScrollTrackButton_OnLoad"/>
+					<OnMouseDown function="ZongLan_ModernHorizontalScrollTrackButton_OnMouseDown"/>
+					<OnMouseWheel function="ZongLan_ModernHorizontalScrollTrackButton_OnMouseWheel"/>
 				</Scripts>
 			</Button>
 			<Button parentKey="ThumbButton" enableMouse="true">
@@ -263,26 +263,26 @@
 					</Layer>
 				</Layers>
 				<Scripts>
-					<OnLoad function="BiaoGe_ModernHorizontalScrollThumbButton_OnLoad"/>
-					<OnEnter function="BiaoGe_ModernHorizontalScrollThumbButton_OnEnter"/>
-					<OnLeave function="BiaoGe_ModernHorizontalScrollThumbButton_OnLeave"/>
-					<OnMouseDown function="BiaoGe_ModernHorizontalScrollThumbButton_OnMouseDown"/>
-					<OnMouseUp function="BiaoGe_ModernHorizontalScrollThumbButton_OnMouseUp"/>
-					<OnSizeChanged function="BiaoGe_ModernHorizontalScrollThumbButton_UpdateShape"/>
+					<OnLoad function="ZongLan_ModernHorizontalScrollThumbButton_OnLoad"/>
+					<OnEnter function="ZongLan_ModernHorizontalScrollThumbButton_OnEnter"/>
+					<OnLeave function="ZongLan_ModernHorizontalScrollThumbButton_OnLeave"/>
+					<OnMouseDown function="ZongLan_ModernHorizontalScrollThumbButton_OnMouseDown"/>
+					<OnMouseUp function="ZongLan_ModernHorizontalScrollThumbButton_OnMouseUp"/>
+					<OnSizeChanged function="ZongLan_ModernHorizontalScrollThumbButton_UpdateShape"/>
 				</Scripts>
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnLoad function="BiaoGe_ModernHorizontalScrollBarTemplate_OnLoad"/>
-			<OnValueChanged function="BiaoGe_ModernHorizontalScrollBarTemplate_OnValueChanged"/>
-			<OnMouseWheel function="BiaoGe_ModernHorizontalScrollBarTemplate_OnMouseWheel"/>
-			<OnSizeChanged function="BiaoGe_ModernHorizontalScrollBarTemplate_OnSizeChanged"/>
+			<OnLoad function="ZongLan_ModernHorizontalScrollBarTemplate_OnLoad"/>
+			<OnValueChanged function="ZongLan_ModernHorizontalScrollBarTemplate_OnValueChanged"/>
+			<OnMouseWheel function="ZongLan_ModernHorizontalScrollBarTemplate_OnMouseWheel"/>
+			<OnSizeChanged function="ZongLan_ModernHorizontalScrollBarTemplate_OnSizeChanged"/>
 		</Scripts>
 	</Slider>
 
-	<ScrollFrame name="BiaoGe_ModernHorizontalScrollFrameTemplate" enableMouse="true" virtual="true">
+	<ScrollFrame name="ZongLan_ModernHorizontalScrollFrameTemplate" enableMouse="true" virtual="true">
 		<Frames>
-			<Slider parentKey="ScrollBar" inherits="BiaoGe_ModernHorizontalScrollBarTemplate">
+			<Slider parentKey="ScrollBar" inherits="ZongLan_ModernHorizontalScrollBarTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
 					<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
@@ -290,12 +290,12 @@
 			</Slider>
 		</Frames>
 		<Scripts>
-			<OnLoad function="BiaoGe_ModernHorizontalScrollFrameTemplate_OnLoad"/>
-			<OnScrollRangeChanged function="BiaoGe_ModernHorizontalScrollFrameTemplate_OnScrollRangeChanged"/>
-			<OnHorizontalScroll function="BiaoGe_ModernHorizontalScrollFrameTemplate_OnHorizontalScroll"/>
-			<OnMouseWheel function="BiaoGe_ModernHorizontalScrollFrameTemplate_OnMouseWheel"/>
-			<OnSizeChanged function="BiaoGe_ModernHorizontalScrollFrameTemplate_Update"/>
-			<OnShow function="BiaoGe_ModernHorizontalScrollFrameTemplate_Update"/>
+			<OnLoad function="ZongLan_ModernHorizontalScrollFrameTemplate_OnLoad"/>
+			<OnScrollRangeChanged function="ZongLan_ModernHorizontalScrollFrameTemplate_OnScrollRangeChanged"/>
+			<OnHorizontalScroll function="ZongLan_ModernHorizontalScrollFrameTemplate_OnHorizontalScroll"/>
+			<OnMouseWheel function="ZongLan_ModernHorizontalScrollFrameTemplate_OnMouseWheel"/>
+			<OnSizeChanged function="ZongLan_ModernHorizontalScrollFrameTemplate_Update"/>
+			<OnShow function="ZongLan_ModernHorizontalScrollFrameTemplate_Update"/>
 		</Scripts>
 	</ScrollFrame>
 </Ui>

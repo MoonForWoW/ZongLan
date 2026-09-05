@@ -13,7 +13,7 @@ ns.NN = NN
 local RN = "|r\n"
 ns.RN = RN
 
-BG = {}
+ZL = {}
 
 ----------tbl元素个数----------
 local function Size(t)
@@ -47,7 +47,7 @@ ns.RGB = RGB
 local function ClassQuest(classID)
     local className, classFile, classID = GetClassInfo(classID)
     local color = select(4, GetClassColor(classFile))
-    return "|c" .. color .. className .. "|r" .. BG.STC_y1(QUESTS_LABEL)
+    return "|c" .. color .. className .. "|r" .. ZL.STC_y1(QUESTS_LABEL)
 end
 ns.ClassQuest = ClassQuest
 
@@ -64,7 +64,7 @@ do
             securecall(func)
         end
     end)
-    function BG.Init(func)
+    function ZL.Init(func)
         tinsert(addonLoadedFuncs, func)
     end
 
@@ -77,7 +77,7 @@ do
             securecall(func)
         end
     end)
-    function BG.Init2(func)
+    function ZL.Init2(func)
         tinsert(enterWorldFuncs, func)
     end
 
@@ -90,7 +90,7 @@ do
             securecall(func)
         end
     end)
-    function BG.Init3(func)
+    function ZL.Init3(func)
         tinsert(loginFuncs, func)
     end
 
@@ -112,7 +112,7 @@ do
         end
         tinsert(events[event], func)
     end
-    function BG.RegisterEvent(event, func)
+    function ZL.RegisterEvent(event, func)
         if type(event) == "table" then
             for _, e in ipairs(event) do
                 RegisterOneEvent(e, func)
@@ -125,86 +125,86 @@ end
 
 -- 版本号
 if GetCurrentRegion() ~= 5 then
-    BG.IsTW = true
+    ZL.IsTW = true
 end
 
 local ver = select(4, GetBuildInfo())
 if ver < 30000 then
-    BG.verLess2 = true
+    ZL.verLess2 = true
 end
 if ver >= 30000 then
-    BG.verOver3 = true
+    ZL.verOver3 = true
 end
 if ver >= 40000 then
-    BG.verOver4 = true
+    ZL.verOver4 = true
 else
-    BG.verLess3 = true
+    ZL.verLess3 = true
 end
 if ver >= 50000 then
-    BG.verOver5 = true
+    ZL.verOver5 = true
 else
-    BG.verLess4 = true
+    ZL.verLess4 = true
 end
 
 if ver < 20000 then
-    BG.IsVanilla = true
-    BG.onlyOneHard = true
+    ZL.IsVanilla = true
+    ZL.onlyOneHard = true
     if (C_Engraving and C_Engraving.IsEngravingEnabled()) then
-        BG.IsVanilla_Sod = true
+        ZL.IsVanilla_Sod = true
     else
-        BG.IsVanilla_60 = true
+        ZL.IsVanilla_60 = true
     end
 end
 
 if ver >= 20000 and ver < 30000 then
-    BG.IsTBC = true
-    BG.onlyOneHard = true
+    ZL.IsTBC = true
+    ZL.onlyOneHard = true
 end
 
 if ver >= 30000 and ver < 40000 then
-    BG.IsWLK = true
+    ZL.IsWLK = true
     if ver >= 38000 then
-        BG.IsTitan = true
-        BG.onlyOneHard = true
+        ZL.IsTitan = true
+        ZL.onlyOneHard = true
     else
-        BG.IsWLK_80 = true
+        ZL.IsWLK_80 = true
     end
 end
 
 if ver >= 40000 and ver < 50000 then
-    BG.IsCTM = true
+    ZL.IsCTM = true
 end
 
 if ver >= 50000 and ver < 60000 then
-    BG.IsMOP = true
-    if BG.IsTW then
-        BG.IsMOP_TW = true
+    ZL.IsMOP = true
+    if ZL.IsTW then
+        ZL.IsMOP_TW = true
     else
-        BG.IsMOP_CN = true
+        ZL.IsMOP_CN = true
     end
-    -- BG.IsTW = true
-    -- BG.IsMOP_TW = true
-    -- BG.IsMOP_CN = nil
+    -- ZL.IsTW = true
+    -- ZL.IsMOP_TW = true
+    -- ZL.IsMOP_CN = nil
 end
 
 if ver >= 110000 then
-    BG.IsRetail = true
+    ZL.IsRetail = true
 end
 
-BG.IsNewUI = true
+ZL.IsNewUI = true
 
 
-function BG.IsWLKFB(FB)
-    local FB = FB or BG.FB1
-    if (FB == "NAXX" and not BG.IsVanilla) or FB == "ULD" or FB == "TOC" or FB == "ICC" then
+function ZL.IsWLKFB(FB)
+    local FB = FB or ZL.FB1
+    if (FB == "NAXX" and not ZL.IsVanilla) or FB == "ULD" or FB == "TOC" or FB == "ICC" then
         return true
     end
 end
 
 local tbl = { "SW", "BT", "HS", "TK", "SSC", "ZA", "KZ", "BWL", "TAQ", }
-function BG.IsTBCFB(FB)
-    if not BG.IsWLK then return false end
-    local FB = FB or BG.FB1
+function ZL.IsTBCFB(FB)
+    if not ZL.IsWLK then return false end
+    local FB = FB or ZL.FB1
     for _, _FB in ipairs(tbl) do
         if FB == _FB then
             return true
@@ -214,14 +214,14 @@ end
 
 -- 阵营
 if UnitFactionGroup("player") == "Alliance" then
-    BG.IsAlliance = true
+    ZL.IsAlliance = true
 end
 
 if UnitFactionGroup("player") == "Horde" then
-    BG.IsHorde = true
+    ZL.IsHorde = true
 end
 
-function BG.GN(unit)
+function ZL.GN(unit)
     unit = unit or "player"
     if unit == "t" then
         unit = "target"
@@ -229,36 +229,36 @@ function BG.GN(unit)
     return GetUnitName(unit, true)
 end
 
-BG.playerName = BG.GN()
-BG.realmName = GetRealmName():gsub(" ", ""):gsub("%-", "")
-BG.realmID = GetRealmID()
+ZL.playerName = ZL.GN()
+ZL.realmName = GetRealmName():gsub(" ", ""):gsub("%-", "")
+ZL.realmID = GetRealmID()
 
-function BG.GFN(name)
+function ZL.GFN(name)
     if not name then return end
     local name, realm = strsplit("-", name)
-    realm = realm or BG.realmName
+    realm = realm or ZL.realmName
     return name .. "-" .. realm
 end
 
-function BG.GSN(name)
+function ZL.GSN(name)
     if not name then return end
     local name, realm = strsplit("-", name)
-    if not realm or realm == "" or realm == BG.realmName then
+    if not realm or realm == "" or realm == ZL.realmName then
         return name
     else
         return name .. "-" .. realm
     end
 end
 
-function BG.SPN(name)
+function ZL.SPN(name)
     if not name then return end
-    if BG.IsSecret(name) then return end
+    if ZL.IsSecret(name) then return end
     return strsplit("-", name, 2)
 end
 
 -- 增加节日掉落
-function BG.AddHolidayLoot(lootInfo)
-    BG.hasHolidayLoot = true
+function ZL.AddHolidayLoot(lootInfo)
+    ZL.hasHolidayLoot = true
     local f = CreateFrame("Frame")
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
     f:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST")
@@ -283,47 +283,47 @@ function BG.AddHolidayLoot(lootInfo)
         for i = 1, numEvents do
             local event = C_Calendar.GetDayEvent(0, day, i)
             if event and lootInfo[event.eventID] then
-                BG.hasHoliday = true
+                ZL.hasHoliday = true
                 tinsert(all, lootInfo[event.eventID])
             end
         end
 
-        for _, FB in pairs(BG.FBtable) do
-            BG.Loot[FB].Holiday = all
+        for _, FB in pairs(ZL.FBtable) do
+            ZL.Loot[FB].Holiday = all
         end
 
-        if BG.hasHoliday then
-            BG.InitHoliday()
+        if ZL.hasHoliday then
+            ZL.InitHoliday()
         end
     end)
 end
 
 -- 特殊兑换物
-function BG.InsertExLoot(FB, tbl)
+function ZL.InsertExLoot(FB, tbl)
     for exItem, loot in pairs(tbl) do
-        BG.Loot[FB].ExchangeItems[exItem] = BG.Loot[FB].ExchangeItems[exItem] or {}
+        ZL.Loot[FB].ExchangeItems[exItem] = ZL.Loot[FB].ExchangeItems[exItem] or {}
         for _, itemID in pairs(loot.items) do
-            tinsert(BG.Loot[FB].ExchangeItems[exItem], itemID)
+            tinsert(ZL.Loot[FB].ExchangeItems[exItem], itemID)
             for _, bossInfo in pairs(loot.boss) do
                 local boss, hard = strsplit("-", bossInfo)
-                BG.Loot[FB][hard]["boss" .. boss .. "other"] =
-                    BG.Loot[FB][hard]["boss" .. boss .. "other"] or {}
-                tinsert(BG.Loot[FB][hard]["boss" .. boss .. "other"], itemID)
+                ZL.Loot[FB][hard]["boss" .. boss .. "other"] =
+                    ZL.Loot[FB][hard]["boss" .. boss .. "other"] or {}
+                tinsert(ZL.Loot[FB][hard]["boss" .. boss .. "other"], itemID)
             end
         end
     end
 end
 
 -- 套装相关
-function BG.InsertSetLoot(FB, tbl)
+function ZL.InsertSetLoot(FB, tbl)
     for boss, loot in pairs(tbl) do
         for hard, _loot in pairs(loot) do
-            BG.Loot[FB][hard]["boss" .. boss .. "other"] =
-                BG.Loot[FB][hard]["boss" .. boss .. "other"] or {}
+            ZL.Loot[FB][hard]["boss" .. boss .. "other"] =
+                ZL.Loot[FB][hard]["boss" .. boss .. "other"] or {}
             for exItemID, items in pairs(_loot) do
-                BG.Loot[FB].ExchangeItems[exItemID] = items
+                ZL.Loot[FB].ExchangeItems[exItemID] = items
                 for _, itemID in pairs(items) do
-                    tinsert(BG.Loot[FB][hard]["boss" .. boss .. "other"], itemID)
+                    tinsert(ZL.Loot[FB][hard]["boss" .. boss .. "other"], itemID)
                 end
             end
         end

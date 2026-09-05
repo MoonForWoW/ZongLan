@@ -1,4 +1,4 @@
-if BG.IsBlackListPlayer then return end
+if ZL.IsBlackListPlayer then return end
 local AddonName, ns = ...
 
 local LibBG         = ns.LibBG
@@ -18,7 +18,7 @@ local GetItemID     = ns.GetItemID
 local Maxb          = ns.Maxb
 local Round         = ns.Round
 
-local player        = BG.playerName
+local player        = ZL.playerName
 local realmID       = GetRealmID()
 
 local pt            = print
@@ -28,40 +28,40 @@ ns.O                = O
 
 local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
-function BG.AddOption(frame, addOn, position)
+function ZL.AddOption(frame, addOn, position)
     local category, layout = Settings.RegisterCanvasLayoutCategory(frame, frame.name, frame.name)
-    BG.optionsID = category:GetID()
+    ZL.optionsID = category:GetID()
     Settings.RegisterAddOnCategory(category)
     return category
 end
 
-function BG.OpenOption()
+function ZL.OpenOption()
     if InCombatLockdown() then
-        BG.SendSystemMessage(L['战斗中无法打开设置界面。'])
+        ZL.SendSystemMessage(L['战斗中无法打开设置界面。'])
     else
-        Settings.OpenToCategory(BG.optionsID)
+        Settings.OpenToCategory(ZL.optionsID)
     end
 end
 
-BG.optionsName = "BiaoGe"
-BG.Init(function()
+ZL.optionsName = AddonName
+ZL.Init(function()
     local main = CreateFrame("Frame", nil, UIParent)
     do
         main:Hide()
-        main.name = BG.optionsName
-        BG.AddOption(main)
+        main.name = ZL.optionsName
+        ZL.AddOption(main)
         local t = main:CreateFontString()
-        t:SetFont(BIAOGE_TEXT_FONT, 16, "OUTLINE")
-        t:SetText("|cff" .. "00BFFF" .. L["<BiaoGe> 金团表格"] .. "|r")
+        t:SetFont(ns.Font, 16, "OUTLINE")
+        t:SetText("|cff" .. "00BFFF" .. L["<ZongLan> 角色总览"] .. "|r")
         t:SetPoint("TOPLEFT", main, 15, 0)
         local top = t
-        local t = main:CreateFontString()
-        t:SetFont(BIAOGE_TEXT_FONT, 13, "OUTLINE")
-        t:SetText(L["|cff808080（带*的设置需要重载才能生效）|r"])
-        t:SetPoint("BOTTOMLEFT", top, "BOTTOMRIGHT", 5, 0)
+        -- local t = main:CreateFontString()
+        -- t:SetFont(ns.Font, 13, "OUTLINE")
+        -- t:SetText(L["|cff808080（带*的设置需要重载才能生效）|r"])
+        -- t:SetPoint("BOTTOMLEFT", top, "BOTTOMRIGHT", 5, 0)
         -- 重载
-        local rlButton = BG.CreateButton(main)
-        rlButton:SetSize(80, 20)
+        local rlButton = ZL.CreateButton(main)
+        rlButton:SetSize(80, 22)
         rlButton:SetPoint("TOPRIGHT", -5, 0)
         rlButton:SetText(L["重载界面"])
         rlButton:SetScript("OnClick", function(self)
@@ -78,18 +78,18 @@ BG.Init(function()
             GameTooltip:Hide()
         end)
         -- 重置配置
-        local bt = BG.CreateButton(main)
-        bt:SetSize(80, 20)
+        local bt = ZL.CreateButton(main)
+        bt:SetSize(80, 22)
         bt:SetPoint("RIGHT", rlButton, "LEFT", -10, 0)
         bt:SetText(L["重置配置"])
         bt:SetScript("OnClick", function(self)
-            if not StaticPopupDialogs["BiaoGe_ResetOptions"] then
-                StaticPopupDialogs["BiaoGe_ResetOptions"] = {
-                    text = L["确认重置BiaoGe插件的所有配置文件？包括心愿清单、历史表格、角色总览、设置选项等等全部都会被重置。"],
+            if not StaticPopupDialogs["ZongLan_ResetOptions"] then
+                StaticPopupDialogs["ZongLan_ResetOptions"] = {
+                    text = L["确认重置ZongLan插件的所有配置文件？包括角色总览、设置选项等等全部都会被重置。"],
                     button1 = L["是"],
                     button2 = L["否"],
                     OnAccept = function()
-                        BiaoGe = nil
+                        ZongLan = nil
                         ReloadUI()
                     end,
                     OnCancel = function()
@@ -100,13 +100,13 @@ BG.Init(function()
                     showAlert = true,
                 }
             end
-            StaticPopup_Show("BiaoGe_ResetOptions")
+            StaticPopup_Show("ZongLan_ResetOptions")
         end)
         bt:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
-            GameTooltip:AddLine(L["重置BiaoGe插件的所有配置文件，包括心愿清单、历史表格、角色总览、设置选项等等全部都会被重置。"], 1, 0.82, 0, true)
+            GameTooltip:AddLine(L["重置ZongLan插件的所有配置文件，包括角色总览、设置选项等等全部都会被重置。"], 1, 0.82, 0, true)
             GameTooltip:Show()
         end)
         bt:SetScript("OnLeave", function(self)
@@ -115,12 +115,12 @@ BG.Init(function()
 
         -- 打开角色总览
         do
-            local bt = BG.CreateButton(main)
+            local bt = ZL.CreateButton(main)
             bt:SetSize(170, 22)
             bt:SetPoint("TOPRIGHT", -5, -35)
             bt:SetText(L["打开角色总览"])
             bt:SetScript("OnClick", function(self)
-                BG.SetFBCD(nil, nil, true)
+                ZL.SetFBCD(nil, nil, true)
             end)
         end
     end
@@ -136,7 +136,7 @@ BG.Init(function()
         f:SetBackdropColor(0, 0, 0, 0.4)
         f:SetPoint("TOPLEFT", SettingsPanel.Container, 5, -60)
         f:SetPoint("BOTTOMRIGHT", SettingsPanel.Container, -5, 0)
-        BG.optionsBackground = f
+        ZL.optionsBackground = f
     end
 
     -- 子选项
@@ -145,12 +145,12 @@ BG.Init(function()
     do
         local last
 
-        function BG.OptionsCreateTab(name, text) -- "Options_biaoge",L["表格"]
-            local bt = CreateFrame("Button", "BG.Button" .. name, main)
+        function ZL.OptionsCreateTab(name, text) -- "Options_biaoge",L["表格"]
+            local bt = CreateFrame("Button", "ZL.Button" .. name, main)
             bt:SetHeight(25)
-            bt:SetNormalFontObject(BG.FontBlue15)
-            bt:SetDisabledFontObject(BG.FontWhite18)
-            bt:SetHighlightFontObject(BG.FontWhite15)
+            bt:SetNormalFontObject(ZL.FontBlue15)
+            bt:SetDisabledFontObject(ZL.FontWhite18)
+            bt:SetHighlightFontObject(ZL.FontWhite15)
             local tex = bt:CreateTexture(nil, "ARTWORK") -- 高亮材质
             tex:SetTexture("interface/paperdollinfoframe/ui-character-tab-highlight")
             bt:SetHighlightTexture(tex)
@@ -162,37 +162,37 @@ BG.Init(function()
             bt:SetText(text)
             local t = bt:GetFontString()
             bt:SetWidth(t:GetStringWidth() + 20)
-            BG["Button" .. name] = bt
+            ZL["Button" .. name] = bt
             last = bt
             bt:SetScript("OnClick", function(self)
-                BG.HideTab(Frames, BG["Frame" .. name])
-                BiaoGe.options.lastFrame = "Frame" .. name
-                BG.PlaySound(1)
+                ZL.HideTab(Frames, ZL["Frame" .. name])
+                ZongLan.options.lastFrame = "Frame" .. name
+                ZL.PlaySound(1)
             end)
 
             local f = CreateFrame("Frame", nil, bt)
             tinsert(Frames, f)
             f:Hide()
-            BG["Frame" .. name] = f
+            ZL["Frame" .. name] = f
             local frame = CreateFrame("Frame", nil, f)
             frame:SetSize(1, 1)
-            local scroll = CreateFrame("ScrollFrame", nil, f, BG.scrollTemplate)
+            local scroll = CreateFrame("ScrollFrame", nil, f, ZL.scrollTemplate)
             local frameName = "Frame" .. name
             scroll:SetPoint("TOPLEFT", SettingsPanel.Container, 15, -70)
             scroll:SetPoint("BOTTOMRIGHT", SettingsPanel.Container, -35, 10)
-            scroll.ScrollBar.scrollStep = BG.scrollStep
-            BG.CreateSrollBarBackdrop(scroll.ScrollBar)
-            BG.HookScrollBarShowOrHide(scroll)
+            scroll.ScrollBar.scrollStep = ZL.scrollStep
+            ZL.CreateSrollBarBackdrop(scroll.ScrollBar)
+            ZL.HookScrollBarShowOrHide(scroll)
             scroll:SetScrollChild(frame)
             frame.scroll = scroll
-            BiaoGe.options.optionsScrollPosition = BiaoGe.options.optionsScrollPosition or {}
+            ZongLan.options.optionsScrollPosition = ZongLan.options.optionsScrollPosition or {}
             scroll:HookScript("OnVerticalScroll", function(self, offset)
-                BiaoGe.options.optionsScrollPosition[frameName] = offset
+                ZongLan.options.optionsScrollPosition[frameName] = offset
             end)
             f:HookScript("OnShow", function()
-                BG.After(0, function()
+                ZL.After(0, function()
                     if not f:IsShown() then return end
-                    local offset = BiaoGe.options.optionsScrollPosition[frameName] or 0
+                    local offset = ZongLan.options.optionsScrollPosition[frameName] or 0
                     local _, maxOffset = scroll.ScrollBar:GetMinMaxValues()
                     scroll:SetVerticalScroll(min(offset, maxOffset))
                 end)
@@ -206,17 +206,17 @@ BG.Init(function()
             return frame
         end
 
-        base = BG.OptionsCreateTab("Options_base", L["常规"])
-        roleOverview = BG.OptionsCreateTab("Options_roleOverview", L["显示内容"])
-        config = BG.OptionsCreateTab("Options_config", L["角色管理"])
+        base = ZL.OptionsCreateTab("Options_base", L["常规"])
+        roleOverview = ZL.OptionsCreateTab("Options_roleOverview", L["显示内容"])
+        config = ZL.OptionsCreateTab("Options_config", L["角色管理"])
 
-        BG.Init2(function()
-            if BiaoGe.options.lastFrame and BG[BiaoGe.options.lastFrame] then
-                BG[BiaoGe.options.lastFrame]:Show()
-                BG[BiaoGe.options.lastFrame]:GetParent():SetEnabled(false)
+        ZL.Init2(function()
+            if ZongLan.options.lastFrame and ZL[ZongLan.options.lastFrame] then
+                ZL[ZongLan.options.lastFrame]:Show()
+                ZL[ZongLan.options.lastFrame]:GetParent():SetEnabled(false)
             else
-                BG.FrameOptions_roleOverview:Show()
-                BG.FrameOptions_roleOverview:GetParent():SetEnabled(false)
+                ZL.FrameOptions_roleOverview:Show()
+                ZL.FrameOptions_roleOverview:GetParent():SetEnabled(false)
             end
         end)
     end
@@ -227,7 +227,7 @@ BG.Init(function()
         do
             local function OnValueChanged(self, value)
                 value = Round(tonumber(value), 2)
-                BiaoGe.options[self.name] = value
+                ZongLan.options[self.name] = value
                 self.Text:SetText(value)
                 local minValue, maxValue = self:GetMinMaxValues()
                 if value == minValue then
@@ -249,14 +249,14 @@ BG.Init(function()
                 else
                     slider:SetValue(value + slider.step)
                 end
-                BG.PlaySound(1)
+                ZL.PlaySound(1)
             end
             function O.CreateSlider(name, text, parent, minValue, maxValue, step, x, y, ontext, width, isSmall)
                 local f = CreateFrame("Frame", nil, parent)
                 f:SetSize(30, 30)
                 f:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
                 local t = f:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("CENTER")
                 t:SetTextColor(1, 1, 1)
                 t:SetText(text)
@@ -277,8 +277,8 @@ BG.Init(function()
                 end)
                 f:SetScript("OnLeave", GameTooltip_Hide)
                 f:SetScript("OnMouseDown", function(self, button)
-                    if button == "RightButton" and BiaoGe.options[name .. "reset"] then
-                        self.slider:SetValue(BiaoGe.options[name .. "reset"])
+                    if button == "RightButton" and ZongLan.options[name .. "reset"] then
+                        self.slider:SetValue(ZongLan.options[name .. "reset"])
                     end
                 end)
 
@@ -289,12 +289,12 @@ BG.Init(function()
                 slider:SetValueStep(step)
                 slider:SetObeyStepOnDrag(true)
                 slider:SetHitRectInsets(0, 0, 0, 0)
-                slider:SetValue(BiaoGe.options[name])
+                slider:SetValue(ZongLan.options[name])
                 slider.name = name
                 slider.step = step
                 f.slider = slider
                 slider:SetScript("OnValueChanged", OnValueChanged)
-                BG.options["button" .. name] = slider
+                ZL.options["button" .. name] = slider
 
                 local bt = CreateFrame("Button", nil, slider)
                 bt:SetSize(13, 19)
@@ -315,10 +315,10 @@ BG.Init(function()
                 bt:SetScript("OnClick", Button_OnClick)
 
                 local t = slider:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("LEFT", slider, "RIGHT", isSmall and 20 or 30, 0)
                 t:SetTextColor(1, .82, 0)
-                t:SetText(BiaoGe.options[name])
+                t:SetText(ZongLan.options[name])
                 slider.Text = t
 
                 return slider, f
@@ -328,9 +328,9 @@ BG.Init(function()
         do
             local function OnClick(self)
                 if self:GetChecked() then
-                    BiaoGe.options[self.name] = 1
+                    ZongLan.options[self.name] = 1
                 else
-                    BiaoGe.options[self.name] = 0
+                    ZongLan.options[self.name] = 0
                 end
                 if self.child then
                     for _, f in pairs(self.child) do
@@ -341,7 +341,7 @@ BG.Init(function()
                     local func, arg1, arg2, arg3, arg4, arg5 = unpack(self.callback)
                     func(arg1, arg2, arg3, arg4, arg5)
                 end
-                BG.PlaySound(1)
+                ZL.PlaySound(1)
             end
             local function OnEnter(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
@@ -363,13 +363,13 @@ BG.Init(function()
                 GameTooltip:Hide()
             end
             local function OnShow(self)
-                self:SetChecked(BiaoGe.options[self.name] == 1)
+                self:SetChecked(ZongLan.options[self.name] == 1)
             end
             function O.CreateCheckButton(name, text, parent, x, y, ontext, long, callback)
                 local bt = CreateFrame("CheckButton", nil, parent, "ChatConfigCheckButtonTemplate")
                 bt:SetSize(30, 30)
                 bt:SetPoint("TOPLEFT", parent, x, y)
-                bt.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                bt.Text:SetFont(ns.Font, 15, "OUTLINE")
                 bt.Text:SetText(text)
                 bt.Text:SetWordWrap(false)
                 bt.Text:SetWidth(min(bt.Text:GetStringWidth() + 20, (type(long) == 'number' and long) or (long and 500 or 160)))
@@ -377,8 +377,8 @@ BG.Init(function()
                 bt.name = name
                 bt.ontext = ontext
                 bt.callback = callback
-                BG.options["button" .. name] = bt
-                bt:SetChecked(BiaoGe.options[name] == 1)
+                ZL.options["button" .. name] = bt
+                bt:SetChecked(ZongLan.options[name] == 1)
                 bt:SetScript("OnClick", OnClick)
                 bt:SetScript("OnEnter", OnEnter)
                 bt:SetScript("OnLeave", OnLeave)
@@ -390,26 +390,26 @@ BG.Init(function()
         do
             function O.CreateEditBox(name, text, parent, x, y, isNumeric, callback, width)
                 local t = parent:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("TOPLEFT", parent, x, y)
                 t:SetTextColor(1, 1, 1)
                 t:SetText(text)
-                BG.options["Text" .. name] = t
+                ZL.options["Text" .. name] = t
 
-                local edit = CreateFrame("EditBox", nil, parent, BG.editTemplate)
+                local edit = CreateFrame("EditBox", nil, parent, ZL.editTemplate)
                 edit:SetSize(width or 50, 20)
                 edit:SetPoint("LEFT", t, "RIGHT", 10, 0)
-                edit:SetText(BiaoGe.options[name] or (isNumeric and 0 or ""))
+                edit:SetText(ZongLan.options[name] or (isNumeric and 0 or ""))
                 edit:SetAutoFocus(false)
                 edit:SetNumeric(isNumeric)
-                BG.SetEditBaseClass(edit)
-                BG.options["button" .. name] = edit
+                ZL.SetEditBaseClass(edit)
+                ZL.options["button" .. name] = edit
                 edit:SetScript("OnTextChanged", function(self)
                     local value = self:GetText()
                     if isNumeric then
                         value = tonumber(value) or 0
                     end
-                    BiaoGe.options[name] = value
+                    ZongLan.options[name] = value
                     if callback then
                         callback(self, value)
                     end
@@ -432,8 +432,8 @@ BG.Init(function()
         -- 快捷键
         do
             function O.CreateBindKey(parent, x, y, wdith, bindKey, name)
-                local bt = BG.CreateButton(parent)
-                bt:SetSize(wdith or 150, 25)
+                local bt = ZL.CreateButton(parent)
+                bt:SetSize(wdith or 130, 25)
                 bt.bindKey = bindKey
                 bt:SetScript("OnClick", function(self)
                     local category
@@ -454,7 +454,7 @@ BG.Init(function()
                                 f.Button:Click()
                             end
                         end
-                        BG.After(0, function()
+                        ZL.After(0, function()
                             SettingsPanel.Container.SettingsList.ScrollBox:ScrollToEnd()
                         end)
                     end
@@ -471,7 +471,7 @@ BG.Init(function()
                 f:SetSize(20, 20)
                 f:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
                 local t = f:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("CENTER")
                 t:SetText(name)
                 f:SetWidth(t:GetStringWidth())
@@ -482,11 +482,11 @@ BG.Init(function()
         do
             function O.CreateDropDown(name, text, parent, tbl, x, y, callback, width)
                 local t = parent:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("TOPLEFT", parent, x, y)
                 t:SetTextColor(1, 1, 1)
                 t:SetText(text)
-                BG.options["Text" .. name] = t
+                ZL.options["Text" .. name] = t
 
                 local function GetText(key)
                     for _, v in ipairs(tbl) do
@@ -499,24 +499,25 @@ BG.Init(function()
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, parent)
                 dropDown:SetPoint("LEFT", t, "RIGHT", -10, -3)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, width or 150)
-                LibBG:UIDropDownMenu_SetText(dropDown, GetText(BiaoGe.options[name]))
+                LibBG:UIDropDownMenu_SetText(dropDown, GetText(ZongLan.options[name]))
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
-                BG.dropDownToggle(dropDown)
-                BG.options["button" .. name] = dropDown
+                ZL.dropDownToggle(dropDown)
+                ZL.options["button" .. name] = dropDown
 
                 LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
                     for _, v in ipairs(tbl) do
                         local option = v
                         local info = LibBG:UIDropDownMenu_CreateInfo()
                         info.text = option.text
+                        info.arg1 = option.key
                         info.func = function()
-                            BiaoGe.options[name] = option.key
+                            ZongLan.options[name] = option.key
                             LibBG:UIDropDownMenu_SetText(dropDown, GetText(option.key))
                             if callback then
                                 callback(dropDown, option.key, option)
                             end
                         end
-                        info.checked = BiaoGe.options[name] == option.key
+                        info.checked = ZongLan.options[name] == option.key
                         LibBG:UIDropDownMenu_AddButton(info)
                     end
                 end)
@@ -527,10 +528,10 @@ BG.Init(function()
     end
 
     local function SetParent(self, key)
-        if BiaoGe.options[key] ~= 1 then
+        if ZongLan.options[key] ~= 1 then
             self:Hide()
         end
-        local parent = BG.options["button" .. key]
+        local parent = ZL.options["button" .. key]
         parent.child = parent.child or {}
         tinsert(parent.child, self)
         if not parent.hookDisable then
@@ -557,40 +558,94 @@ BG.Init(function()
         -- UI缩放
         do
             local name = "roleOverviewScale"
-            BG.options[name .. "reset"] = 1
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = 1
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local ontext = nil
             local f = O.CreateSlider(name, (L["UI缩放："]), parent, 0.5, 1.5, 0.01, 15, height - h, ontext)
             f:HookScript("OnValueChanged", function(self, value)
-                BG.UpdateFBCDFrameScale()
+                ZL.UpdateFBCDFrameScale()
             end)
         end
         h = h + 30
         -- 背景透明度
         do
             local name = "roleOverviewAlpha"
-            BG.options[name .. "reset"] = .9
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = .9
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local ontext = nil
             local f = O.CreateSlider(name, (L["背景透明度："]), parent, 0.1, 1.0, 0.01, 15, height - h, ontext)
             f:HookScript("OnValueChanged", function(self, value)
-                if BG.FBCDFrame then
-                    BG.FBCDFrame:SetBackdropColor(0, 0, 0, value)
+                if ZL.FBCDFrame then
+                    ZL.FBCDFrame:SetBackdropColor(0, 0, 0, value)
                 end
             end)
         end
         h = h + 35
         -- 快捷键
         do
-            O.CreateBindKey(parent, 15, -h, nil, "RoleOverview", L["快捷键："])
+            O.CreateBindKey(parent, 15, -h, nil, "ZONGLAN_ROLEOVERVIEW", L["快捷键："])
+        end
+        h = h + 35
+        -- 字体
+        if ZL.fontList then
+            local name = "font"
+            local tbl = {}
+            for _, font in ipairs(ZL.fontList) do
+                tinsert(tbl, { key = font, text = font })
+            end
+            ZongLan.options[name] = ZongLan.font
+            local dropDown = O.CreateDropDown(name, L["字体（需重载）"] .. "：", parent, tbl, 15, -h,
+                function(_, key)
+                    ZongLan.font = key
+                end)
+
+            local preview = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+            preview:SetBackdrop({
+                bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeSize = 1,
+            })
+            preview:SetBackdropColor(0, 0, 0, 0.5)
+            preview:SetBackdropBorderColor(0, 0, 0, 1)
+            preview.text = preview:CreateFontString()
+            preview.text:SetPoint("CENTER")
+            preview.text:SetTextColor(1, 1, 1)
+            preview.text:SetJustifyH("LEFT")
+            preview:Hide()
+
+            function preview:Update(button, font)
+                self:SetParent(button)
+                self:ClearAllPoints()
+                self:SetPoint("BOTTOMLEFT", button, "TOPRIGHT", 0, 0)
+                self.text:SetFont(format("Fonts\\%s", font), 15, "OUTLINE")
+                self.text:SetText(font .. L["字体预览\n\nZongLan插件\n1234567890"])
+                self:SetSize(self.text:GetStringWidth() + 10, self.text:GetStringHeight() + 10)
+                self:Show()
+            end
+
+            for i = 1, L_UIDROPDOWNMENU_MAXBUTTONS do
+                local button = _G["L_DropDownList1Button" .. i]
+                if button then
+                    button:HookScript("OnEnter", function()
+                        if not L_DropDownList1 or L_DropDownList1.dropdown ~= dropDown then return end
+                        if button.arg1 then
+                            preview:Update(button, button.arg1)
+                        end
+                    end)
+                    button:HookScript("OnLeave", function()
+                        if not L_DropDownList1 or L_DropDownList1.dropdown ~= dropDown then return end
+                        preview:Hide()
+                    end)
+                end
+            end
         end
 
         h = h + 35
         -- 排序
         do
             local name = "roleOverviewSort1"
-            BG.options[name .. "reset"] = "iLevel-class-player"
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = "iLevel-class-player"
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local tbl = {
                 { key = "iLevel-class-player", text = L["装等-职业-名字"] },
                 { key = "class-iLevel-player", text = L["职业-装等-名字"] },
@@ -602,26 +657,26 @@ BG.Init(function()
 
             local dropDown = O.CreateDropDown(name, L["排序方式："], parent, tbl, 15, -h,
                 function(self, key)
-                    if key == "custom" and BG.InitializeRoleOverviewCustomSort then
-                        BG.InitializeRoleOverviewCustomSort()
-                    elseif BG.RoleOverviewSortFrame and BG.RoleOverviewSortFrame:IsVisible() then
-                        BG.RoleOverviewSortFrame:Hide()
+                    if key == "custom" and ZL.InitializeRoleOverviewCustomSort then
+                        ZL.InitializeRoleOverviewCustomSort()
+                    elseif ZL.RoleOverviewSortFrame and ZL.RoleOverviewSortFrame:IsVisible() then
+                        ZL.RoleOverviewSortFrame:Hide()
                     end
                     self.bt:SetShown(key == "custom")
-                    BG.RefreshFBCDFrame()
+                    ZL.RefreshFBCDFrame()
                 end)
 
-            dropDown.bt = BG.CreateButton(dropDown)
+            dropDown.bt = ZL.CreateButton(dropDown)
             dropDown.bt:SetSize(100, 25)
             dropDown.bt:SetPoint("LEFT", dropDown, "RIGHT", 0, 3)
             dropDown.bt:SetText(L["修改排序"])
-            dropDown.bt:SetShown(BiaoGe.options[name] == "custom")
+            dropDown.bt:SetShown(ZongLan.options[name] == "custom")
             dropDown.bt:SetScript("OnClick", function(self)
-                BG.PlaySound(1)
-                if BG.RoleOverviewSortFrame and BG.RoleOverviewSortFrame:IsVisible() then
-                    BG.RoleOverviewSortFrame:Hide()
+                ZL.PlaySound(1)
+                if ZL.RoleOverviewSortFrame and ZL.RoleOverviewSortFrame:IsVisible() then
+                    ZL.RoleOverviewSortFrame:Hide()
                 else
-                    BG.CreateRoleOverviewSortFrame(self)
+                    ZL.CreateRoleOverviewSortFrame(self)
                 end
             end)
         end
@@ -630,8 +685,8 @@ BG.Init(function()
         -- 默认显示
         do
             local name = "roleOverviewDefaultShow"
-            BG.options[name .. "reset"] = "one"
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = "one"
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local tbl = {
                 { key = "one", text = L["当前服务器角色"] },
                 { key = "all", text = L["全部服务器角色"] },
@@ -639,7 +694,7 @@ BG.Init(function()
 
             O.CreateDropDown(name, L["默认显示："], parent, tbl, 15, -h,
                 function()
-                    BG.RefreshFBCDFrame()
+                    ZL.RefreshFBCDFrame()
                 end)
         end
 
@@ -647,12 +702,12 @@ BG.Init(function()
         -- 布局
         do
             local name = "roleOverviewLayout"
-            if BG.IsRetail then
-                BG.options[name .. "reset"] = "new"
+            if ZL.IsRetail then
+                ZL.options[name .. "reset"] = "new"
             else
-                BG.options[name .. "reset"] = "up_down"
+                ZL.options[name .. "reset"] = "up_down"
             end
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local tbl = {
                 { key = "up_down", text = L["横向布局1"] },
                 { key = "left_right", text = L["横向布局2"] },
@@ -661,7 +716,7 @@ BG.Init(function()
 
             O.CreateDropDown(name, L["布局方式："], parent, tbl, 15, -h,
                 function()
-                    BG.RefreshFBCDFrame()
+                    ZL.RefreshFBCDFrame()
                 end)
         end
 
@@ -669,8 +724,8 @@ BG.Init(function()
         -- 屏蔽等级
         do
             local name = "roleOverviewNotShowLevel"
-            BG.options[name .. "reset"] = 0
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = 0
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
 
             O.CreateEditBox(name, L["仅显示高于该等级的角色："], parent, 15, -h, true)
         end
@@ -679,60 +734,113 @@ BG.Init(function()
         -- 屏蔽装等
         do
             local name = "roleOverviewNotShowiLevel"
-            BG.options[name .. "reset"] = 0
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = 0
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
 
             O.CreateEditBox(name, L["仅显示高于该装等的角色："], parent, 15, -h, true)
+        end
+
+        h = h + 30
+        -- 悬浮框
+        do
+            local name = "mainIcon"
+            ZL.options[name .. "reset"] = 0
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
+            local ontext = {
+                L["显示悬浮框"],
+            }
+            O.CreateCheckButton(name, L["显示悬浮框"], parent, 15, -h, ontext, true, {
+                function()
+                    if ZL.MainIcon then
+                        ZL.MainIcon:SetShown(ZongLan.options[name] == 1)
+                    end
+                end,
+            })
+        end
+
+        -- 悬浮框缩放
+        do
+            local name = "mainIconScale"
+            ZL.options[name .. "reset"] = 1
+            ZongLan.options[name] = tonumber(ZongLan.options[name]) or ZL.options[name .. "reset"]
+            local ontext = nil
+            local slider, sliderLabel = O.CreateSlider(name, L["缩放："], parent, 0.5, 1.5, 0.01, 170, -h + 2, ontext, 80, true)
+            SetParent(slider, "mainIcon")
+            SetParent(sliderLabel, "mainIcon")
+            slider:HookScript("OnValueChanged", function(_, value)
+                if ZL.MainIcon then
+                    ZL.MainIcon:SetScale(value)
+                end
+            end)
+        end
+
+        -- 悬浮框层级
+        do
+            local name = "mainIconFrameLevel"
+            ZL.options[name .. "reset"] = "HIGH"
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
+            local tbl = {}
+            for _, strata in ipairs({ "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }) do
+                tinsert(tbl, { key = strata, text = strata })
+            end
+            local dropDown = O.CreateDropDown(name, L["层级"] .. "：", parent, tbl, 400, -h - 5,
+                function(_, key)
+                    if ZL.MainIcon then
+                        ZL.MainIcon:SetFrameStrata(key)
+                    end
+                end, 90)
+            SetParent(dropDown, "mainIcon")
+            SetParent(ZL.options["Text" .. name], "mainIcon")
         end
 
         h = h + 30
         -- 团本CD显示为BOSS击杀数量
         do
             local name = "showRaidCDKillNum"
-            BG.options[name .. "reset"] = BG.IsRetail and 1 or 0
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            ZL.options[name .. "reset"] = ZL.IsRetail and 1 or 0
+            ZongLan.options[name] = ZongLan.options[name] or ZL.options[name .. "reset"]
             local ontext = {
                 L["团本CD显示为BOSS击杀数量"],
                 L["没全通的副本，现在会显示击杀的BOSS数量，而不是显示一个绿色钩子。"],
             }
-            O.CreateCheckButton(name, L["团本CD显示为BOSS击杀数量"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            O.CreateCheckButton(name, L["团本CD显示为BOSS击杀数量"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
         end
 
         -- 显示牌子总上限
-        if BG.IsMOP then
+        if ZL.IsMOP then
             h = h + 30
             local name = "showCurrencyTop"
             local ontext = {
                 L["显示牌子总上限"],
                 L["像勇气点数、征服点数有总上限的牌子，在角色总览里会显示其总上限。"],
             }
-            O.CreateCheckButton(name, L["显示牌子总上限"] .. L["（需重载）"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            O.CreateCheckButton(name, L["显示牌子总上限"] .. L["（需重载）"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
         end
 
         h = h + 30
         -- 显示其他装备部位
         do
             local name = "roleOverviewShowOtherEquip"
-            BiaoGe.options[name] = BiaoGe.options[name] or 0
+            ZongLan.options[name] = ZongLan.options[name] or 0
             local choiceName = "roleOverviewOtherEquipSlots"
-            if type(BiaoGe.options[choiceName]) ~= "table" then
-                BiaoGe.options[choiceName] = {}
+            if type(ZongLan.options[choiceName]) ~= "table" then
+                ZongLan.options[choiceName] = {}
             end
             local ontext = {
                 L["显示其他装备部位"],
                 L["在饰品后面增加显示其他装备部位。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture('QUEST') .. L["显示其他装备部位"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            local f = O.CreateCheckButton(name, AddTexture('QUEST') .. L["显示其他装备部位"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
 
-            local chooseBT = BG.CreateButton(f)
+            local chooseBT = ZL.CreateButton(f)
             chooseBT:SetSize(120, 22)
             chooseBT:SetPoint("LEFT", f.Text, "RIGHT", 0, 0)
             SetParent(chooseBT, name)
 
             local function UpdateChooseButtonText()
                 local count = 0
-                for _, equipInfo in ipairs(BG.RoleOverviewOtherEquipSlots) do
-                    if BiaoGe.options[choiceName][equipInfo.id] == 1 then
+                for _, equipInfo in ipairs(ZL.RoleOverviewOtherEquipSlots) do
+                    if ZongLan.options[choiceName][equipInfo.id] == 1 then
                         count = count + 1
                     end
                 end
@@ -760,36 +868,36 @@ BG.Init(function()
             closeBT:SetPoint("TOPRIGHT", 2, 2)
 
             local title = chooseFrame:CreateFontString()
-            title:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            title:SetFont(ns.Font, 15, "OUTLINE")
             title:SetPoint("TOP", 0, -7)
             title:SetText(L["显示其他装备部位"])
             title:SetTextColor(1, 1, 1)
 
-            for i, equipInfo in ipairs(BG.RoleOverviewOtherEquipSlots) do
+            for i, equipInfo in ipairs(ZL.RoleOverviewOtherEquipSlots) do
                 local bt = CreateFrame("CheckButton", nil, chooseFrame, "ChatConfigCheckButtonTemplate")
                 local column = floor((i - 1) / 6)
                 local row = (i - 1) % 6
                 bt:SetPoint("TOPLEFT", 10 + column * 110, -30 - row * 25)
                 bt:SetSize(25, 25)
-                bt.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                bt.Text:SetFont(ns.Font, 15, "OUTLINE")
                 bt.Text:SetText(equipInfo.name)
                 bt.Text:SetTextColor(1, .82, 0)
                 bt:SetHitRectInsets(0, -75, 0, 0)
-                bt:SetChecked(BiaoGe.options[choiceName][equipInfo.id] == 1)
+                bt:SetChecked(ZongLan.options[choiceName][equipInfo.id] == 1)
                 bt:SetScript("OnClick", function(self)
                     if self:GetChecked() then
-                        BiaoGe.options[choiceName][equipInfo.id] = 1
+                        ZongLan.options[choiceName][equipInfo.id] = 1
                     else
-                        BiaoGe.options[choiceName][equipInfo.id] = nil
+                        ZongLan.options[choiceName][equipInfo.id] = nil
                     end
                     UpdateChooseButtonText()
-                    BG.RefreshFBCDFrame()
-                    BG.PlaySound(1)
+                    ZL.RefreshFBCDFrame()
+                    ZL.PlaySound(1)
                 end)
             end
 
             chooseBT:SetScript("OnClick", function()
-                BG.PlaySound(1)
+                ZL.PlaySound(1)
                 chooseFrame:SetShown(not chooseFrame:IsShown())
             end)
             chooseBT:HookScript("OnHide", function()
@@ -801,17 +909,17 @@ BG.Init(function()
         -- 备注
         do
             local name = "roleOverviewShowNote"
-            BiaoGe.options[name] = BiaoGe.options[name] or 0
+            ZongLan.options[name] = ZongLan.options[name] or 0
             local ontext = {
                 L["显示角色备注"],
                 L["在角色名字后面，增加显示一段自定义文本。"],
                 " ",
-                L["使用方法：/BGR，把角色总览面板固定，然后鼠标点击角色对应的备注栏即可修改备注。"]
+                L["使用方法：/zl，把角色总览面板固定，然后鼠标点击角色对应的备注栏即可修改备注。"]
             }
-            local f = O.CreateCheckButton(name, L["显示角色备注"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            local f = O.CreateCheckButton(name, L["显示角色备注"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
 
             local t = f:CreateFontString()
-            t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            t:SetFont(ns.Font, 15, "OUTLINE")
             t:SetPoint("LEFT", f.Text, "RIGHT", 10, 0)
             t:SetTextColor(1, 1, 1)
             t:SetText(L["文本宽度："])
@@ -819,28 +927,28 @@ BG.Init(function()
 
             local miniWidth = 60
             local name2 = "roleOverviewShowNote_width"
-            BiaoGe.options[name2] = BiaoGe.options[name2] or 100
-            local edit = CreateFrame("EditBox", nil, f, BG.editTemplate)
+            ZongLan.options[name2] = ZongLan.options[name2] or 100
+            local edit = CreateFrame("EditBox", nil, f, ZL.editTemplate)
             edit:SetSize(100, 20)
             edit:SetPoint("LEFT", t, "RIGHT", 5, 0)
-            edit:SetText(BiaoGe.options[name2])
+            edit:SetText(ZongLan.options[name2])
             edit:SetAutoFocus(false)
             edit:SetNumeric(true)
-            BG.SetEditBaseClass(edit)
+            ZL.SetEditBaseClass(edit)
             SetParent(edit, "roleOverviewShowNote")
             edit:SetScript("OnTextChanged", function(self)
-                BiaoGe.options[name2] = max(miniWidth, tonumber(self:GetText()) or 0)
+                ZongLan.options[name2] = max(miniWidth, tonumber(self:GetText()) or 0)
             end)
 
             local t = f:CreateFontString()
-            t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            t:SetFont(ns.Font, 15, "OUTLINE")
             t:SetPoint("LEFT", edit, "RIGHT", 20, 0)
             t:SetTextColor(1, 1, 1)
             t:SetText(L["文本使用职业颜色："])
             SetParent(t, "roleOverviewShowNote")
 
             local name3 = "roleOverviewShowNote_useClassColor"
-            BiaoGe.options[name3] = BiaoGe.options[name3] or 1
+            ZongLan.options[name3] = ZongLan.options[name3] or 1
             local buttons = {}
             local numOptions = {
                 { name = L["是"], key = 1, },
@@ -853,17 +961,17 @@ BG.Init(function()
                 SetParent(bt, "roleOverviewShowNote")
                 tinsert(buttons, bt)
                 bt.Text = bt:CreateFontString()
-                bt.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                bt.Text:SetFont(ns.Font, 15, "OUTLINE")
                 bt.Text:SetPoint("LEFT", bt, "RIGHT", 0, 0)
                 bt.Text:SetText(numOptions[i].name)
                 bt.Text:SetTextColor(1, .82, 0)
                 bt:SetHitRectInsets(0, -bt.Text:GetWidth(), -5, -5)
-                if numOptions[i].key == BiaoGe.options[name3] then
+                if numOptions[i].key == ZongLan.options[name3] then
                     bt:SetChecked(true)
                     bt.Text:SetTextColor(0, 1, 0)
                 end
                 bt:SetScript("OnClick", function(self)
-                    BG.PlaySound(1)
+                    ZL.PlaySound(1)
                     for _, radioButton in ipairs(buttons) do
                         if radioButton ~= self then
                             radioButton:SetChecked(false)
@@ -872,7 +980,7 @@ BG.Init(function()
                     end
                     self:SetChecked(true)
                     self.Text:SetTextColor(0, 1, 0)
-                    BiaoGe.options.roleOverviewShowNote_useClassColor = numOptions[i].key
+                    ZongLan.options.roleOverviewShowNote_useClassColor = numOptions[i].key
                 end)
             end
         end
@@ -881,39 +989,63 @@ BG.Init(function()
         -- 显示专精图标
         do
             local name = "roleOverviewShowTalent"
-            BiaoGe.options[name] = BiaoGe.options[name] or 1
+            ZongLan.options[name] = ZongLan.options[name] or 1
             local ontext = {
-                L["显示角色专精"],
+                L["显示角色专精图标"],
                 L["在角色名字前面增加显示专精图标。"],
             }
-            O.CreateCheckButton(name, L["显示角色专精"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            O.CreateCheckButton(name, L["显示角色专精图标"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
         end
 
         h = h + 30
         -- 显示阵营
         do
             local name = "roleOverviewShowFaction"
-            BiaoGe.options[name] = BiaoGe.options[name] or 0
+            ZongLan.options[name] = ZongLan.options[name] or 0
             local ontext = {
                 L["显示角色阵营"],
                 L["角色装等和等级会根据阵营染色为浅蓝色（联盟）或浅红色（部落），用来区分该角色是哪个阵营。"],
             }
-            O.CreateCheckButton(name, L["显示角色阵营"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            O.CreateCheckButton(name, L["显示角色阵营"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
         end
 
         h = h + 30
         -- 使用黑白着色
         do
             local name = "roleOverviewblackWhite"
-            BiaoGe.options[name] = BiaoGe.options[name] or 0
+            ZongLan.options[name] = ZongLan.options[name] or 0
             local ontext = {
                 L["使用黑白着色"],
                 L["勾选后每行使用黑白着色。否则使用下横线作分割。该选项仅对横向布局有效。"],
             }
-            O.CreateCheckButton(name, L["使用黑白着色"], base, 15, -h, ontext, true, { BG.RefreshFBCDFrame })
+            O.CreateCheckButton(name, L["使用黑白着色"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
+        end
+
+        h = h + 30
+        -- 显示小地图图标
+        do
+            local name = "miniMap"
+            ZongLan.options[name] = ZongLan.options[name] or 1
+            local ontext = {
+                L["显示小地图图标"],
+                L["显示小地图图标。"],
+            }
+            local function UpdateMinimapIcon()
+                ZongLan.minimap = ZongLan.minimap or {}
+                ZongLan.minimap.hide = ZongLan.options[name] ~= 1
+                if ZL.MinimapIcon then
+                    if ZongLan.minimap.hide then
+                        ZL.MinimapIcon:Hide(AddonName)
+                    else
+                        ZL.MinimapIcon:Show(AddonName)
+                    end
+                end
+            end
+            O.CreateCheckButton(name, L["显示小地图图标"], base, 15, -h, ontext, true, { UpdateMinimapIcon })
         end
     end
 
+    -- 显示内容
     do
         local h = 0
 
@@ -931,12 +1063,12 @@ BG.Init(function()
             tblName = tblName or "FBCDall_table"
             dbName = dbName or "FBCDchoice"
             for i = n1, n2 do
-                local name = dbName == "FBCDchoice" and BG[tblName][i].name or BG[tblName][i].id
-                local name2 = BG[tblName][i].name2
-                local color = BG[tblName][i].color
-                local fbId = BG[tblName][i].fbId
-                local type = BG[tblName][i].type
-                local diff = BG.GetDiffShortName(BG[tblName][i].diff) or ""
+                local name = dbName == "FBCDchoice" and ZL[tblName][i].name or ZL[tblName][i].id
+                local name2 = ZL[tblName][i].name2
+                local color = ZL[tblName][i].color
+                local fbId = ZL[tblName][i].fbId
+                local type = ZL[tblName][i].type
+                local diff = ZL.GetDiffShortName(ZL[tblName][i].diff) or ""
                 local bt = CreateFrame("CheckButton", nil, lastFrame.child2, "ChatConfigCheckButtonTemplate")
                 bt:SetSize(buttonHeight, buttonHeight)
                 bt:SetHitRectInsets(0, -buttonWidth + 45, 0, 0)
@@ -951,30 +1083,30 @@ BG.Init(function()
                     row = row + 1
                 end
                 right = bt
-                bt.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                bt.Text:SetFont(ns.Font, 15, "OUTLINE")
                 bt.Text:SetText("|cff" .. color .. diff .. (name2 or name):gsub("sod", "") .. RR)
                 bt.Text:SetWidth(buttonWidth - buttonHeight)
                 bt.Text:SetWordWrap(false)
-                if not BiaoGe[dbName][name] or BiaoGe[dbName][name] == 0 then
-                    BiaoGe[dbName][name] = nil
+                if not ZongLan[dbName][name] or ZongLan[dbName][name] == 0 then
+                    ZongLan[dbName][name] = nil
                     bt:SetChecked(false)
                 else
-                    BiaoGe[dbName][name] = 1
+                    ZongLan[dbName][name] = 1
                     bt:SetChecked(true)
                 end
                 bt:SetScript("OnClick", function(self)
                     if self:GetChecked() then
-                        BiaoGe[dbName][name] = 1
+                        ZongLan[dbName][name] = 1
                     else
-                        BiaoGe[dbName][name] = nil
+                        ZongLan[dbName][name] = nil
                     end
-                    BG.RefreshFBCDFrame()
-                    BG.PlaySound(1)
+                    ZL.RefreshFBCDFrame()
+                    ZL.PlaySound(1)
                 end)
                 bt:SetScript("OnEnter", function(self)
                     local text
                     if dbName == "FBCDchoice" then
-                        local maxplayers = BG[tblName][i].num and (BG[tblName][i].num .. L["人"]) or ""
+                        local maxplayers = ZL[tblName][i].num and (ZL[tblName][i].num .. L["人"]) or ""
                         text = "|cff" .. color .. maxplayers .. diff .. (name2 or GetRealZoneText(fbId)) .. RR
                         if type ~= "fb" then
                             text = self.Text:GetText()
@@ -1001,11 +1133,11 @@ BG.Init(function()
             local buttonHeight = 25
             local row = 1
             for i = n1, n2 do
-                local name = BG.MONEYall_table[i].name
-                local tex = BG.MONEYall_table[i].tex
-                local color = BG.MONEYall_table[i].color
-                local id = BG.MONEYall_table[i].id
-                local itemType = BG.MONEYall_table[i].type
+                local name = ZL.MONEYall_table[i].name
+                local tex = ZL.MONEYall_table[i].tex
+                local color = ZL.MONEYall_table[i].color
+                local id = ZL.MONEYall_table[i].id
+                local itemType = ZL.MONEYall_table[i].type
                 local bt = CreateFrame("CheckButton", nil, lastFrame.child2, "ChatConfigCheckButtonTemplate")
                 bt:SetSize(buttonHeight, buttonHeight)
                 bt:SetHitRectInsets(0, -buttonWidth + 40, 0, 0)
@@ -1020,23 +1152,23 @@ BG.Init(function()
                     row = row + 1
                 end
                 right = bt
-                bt.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                bt.Text:SetFont(ns.Font, 15, "OUTLINE")
                 bt.Text:SetText(AddTexture(tex))
-                if not BiaoGe.MONEYchoice[id] or BiaoGe.MONEYchoice[id] == 0 then
-                    BiaoGe.MONEYchoice[id] = nil
+                if not ZongLan.MONEYchoice[id] or ZongLan.MONEYchoice[id] == 0 then
+                    ZongLan.MONEYchoice[id] = nil
                     bt:SetChecked(false)
                 else
-                    BiaoGe.MONEYchoice[id] = 1
+                    ZongLan.MONEYchoice[id] = 1
                     bt:SetChecked(true)
                 end
                 bt:SetScript("OnClick", function(self)
                     if self:GetChecked() then
-                        BiaoGe.MONEYchoice[id] = 1
+                        ZongLan.MONEYchoice[id] = 1
                     else
-                        BiaoGe.MONEYchoice[id] = nil
+                        ZongLan.MONEYchoice[id] = nil
                     end
-                    BG.RefreshFBCDFrame()
-                    BG.PlaySound(1)
+                    ZL.RefreshFBCDFrame()
+                    ZL.PlaySound(1)
                 end)
                 bt:SetScript("OnEnter", function(self)
                     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
@@ -1072,7 +1204,7 @@ BG.Init(function()
             frame.tex:SetSize(18, 18)
             frame.tex:SetTexture(130821)
             frame.text = frame:CreateFontString()
-            frame.text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            frame.text:SetFont(ns.Font, 15, "OUTLINE")
             frame.text:SetPoint("LEFT", frame.tex, "RIGHT", 2, 0)
             frame.text:SetText(name)
             frame.open = true
@@ -1099,16 +1231,16 @@ BG.Init(function()
                     self.child:SetHeight(1)
                     self.tex:SetTexture(130838)
                     self.open = nil
-                    BiaoGe.options['roleOverviewTitleCollapse' .. name] = true
+                    ZongLan.options['roleOverviewTitleCollapse' .. name] = true
                 else
                     self.child2:Show()
                     self.child:SetHeight(self.height)
                     self.tex:SetTexture(130821)
                     self.open = true
-                    BiaoGe.options['roleOverviewTitleCollapse' .. name] = nil
+                    ZongLan.options['roleOverviewTitleCollapse' .. name] = nil
                 end
                 if button then
-                    BG.PlaySound(1)
+                    ZL.PlaySound(1)
                 end
             end)
             frame:SetScript("OnEnter", function(self)
@@ -1119,8 +1251,8 @@ BG.Init(function()
             end)
             return frame
         end
-        if BG.IsVanilla_Sod then
-            local z = { 10, 3 }     -- 3是专业
+        if ZL.IsVanilla_Sod then
+            local z = { 10, 3 } -- 3是专业
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1130,8 +1262,8 @@ BG.Init(function()
             CreateFBCDbutton(1, x[startNum])
             lastFrame = CreateTitle(L["专业CD"], "ADFF2F")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsVanilla_60 then
-            local z = { 7, BG.skillCount, #BG.factionTbl }     -- 3是专业
+        elseif ZL.IsVanilla_60 then
+            local z = { 7, ZL.skillCount, #ZL.factionTbl } -- 3是专业
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1144,8 +1276,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsTBC then
-            local z = { BG.FBCount, BG.dayQuestCount, #BG.factionTbl }
+        elseif ZL.IsTBC then
+            local z = { ZL.FBCount, ZL.dayQuestCount, #ZL.factionTbl }
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1158,8 +1290,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsWLK_80 then
-            local z = { 18, 11, 5, 6, 10, #BG.factionTbl }     -- 6是日常，10是专业
+        elseif ZL.IsWLK_80 then
+            local z = { 18, 11, 5, 6, 10, #ZL.factionTbl } -- 6是日常，10是专业
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1181,8 +1313,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsTitan then
-            local z = { BG.FBCount, BG.dayQuestCount, BG.skillCount, #BG.factionTbl }
+        elseif ZL.IsTitan then
+            local z = { ZL.FBCount, ZL.dayQuestCount, ZL.skillCount, #ZL.factionTbl }
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1198,8 +1330,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsCTM then
-            local z = { 7, 18, 11, 5, 3, #BG.factionTbl }     -- 3是日常
+        elseif ZL.IsCTM then
+            local z = { 7, 18, 11, 5, 3, #ZL.factionTbl } -- 3是日常
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1221,8 +1353,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsMOP then
-            local z = { BG.FBCount, 7, 18, 11, 5, BG.dayQuestCount, BG.skillCount, #BG.factionTbl }
+        elseif ZL.IsMOP then
+            local z = { ZL.FBCount, 7, 18, 11, 5, ZL.dayQuestCount, ZL.skillCount, #ZL.factionTbl }
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1250,8 +1382,8 @@ BG.Init(function()
             startNum = startNum + 1
             lastFrame = CreateTitle(L["声望"], "FFFF00")
             CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
-        elseif BG.IsRetail then
-            local z = { BG.FBCount, }
+        elseif ZL.IsRetail then
+            local z = { ZL.FBCount, }
             local x = {}
             for i, v in ipairs(z) do
                 x[i] = (x[i - 1] or 0) + v
@@ -1260,21 +1392,21 @@ BG.Init(function()
             lastFrame = CreateTitle(L["团本"], "00BFFF")
             CreateFBCDbutton(1, x[startNum])
         end
-        if not BG.IsRetail then
-            lastFrame = CreateTitle(L["专业技能点"], BG.SKILLall_table[1].color)
-            CreateFBCDbutton(1, #BG.SKILLall_table, nil, "SKILLall_table", "SKILLchoice")
+        if not ZL.IsRetail then
+            lastFrame = CreateTitle(L["专业技能点"], ZL.SKILLall_table[1].color)
+            CreateFBCDbutton(1, #ZL.SKILLall_table, nil, "SKILLall_table", "SKILLchoice")
         end
         lastFrame = CreateTitle(L["货币"], "FFFFFF")
-        CreateMONEYbutton(1, #BG.MONEYall_table)
+        CreateMONEYbutton(1, #ZL.MONEYall_table)
 
         for i, title in ipairs(titles) do
-            if BiaoGe.options['roleOverviewTitleCollapse' .. title.name] and title.open then
+            if ZongLan.options['roleOverviewTitleCollapse' .. title.name] and title.open then
                 title:GetScript("OnMouseDown")(title)
             end
         end
     end
 
-    -- 角色配置
+    -- 角色管理
     do
         local width = 15
         local height = 5
@@ -1284,14 +1416,14 @@ BG.Init(function()
 
         do
             local text = config:CreateFontString()
-            text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            text:SetFont(ns.Font, 15, "OUTLINE")
             text:SetPoint("TOPLEFT", width, height - 15)
             text:SetText(L["角色列表"])
             text:SetTextColor(0, 1, 0)
             text:SetWidth(width2)
 
             local text = config:CreateFontString()
-            text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            text:SetFont(ns.Font, 15, "OUTLINE")
             text:SetPoint("TOPLEFT", width + width2 + 15, height - 15)
             text:SetText(L["操作"])
             text:SetTextColor(0, 1, 0)
@@ -1300,7 +1432,7 @@ BG.Init(function()
 
         height = height - 15
 
-        local f, child = BG.CreateScrollFrame(config, width2, height2)
+        local f, child = ZL.CreateScrollFrame(config, width2, height2)
         f:SetBackdrop({
             bgFile = "Interface/ChatFrame/ChatFrameBackground",
             edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
@@ -1314,9 +1446,9 @@ BG.Init(function()
         local buttons = {}
 
         local function UpdateDeleteButton()
-            BG.options.configDeleteButton:Disable()
+            ZL.options.configDeleteButton:Disable()
             if choose.realmID and choose.player then
-                BG.options.configDeleteButton:Enable()
+                ZL.options.configDeleteButton:Enable()
             end
         end
 
@@ -1327,23 +1459,23 @@ BG.Init(function()
             end
             wipe(buttons)
 
-            for realmID, v in pairs(BiaoGe.playerInfo) do
+            for realmID, v in pairs(ZongLan.playerInfo) do
                 if next(v) then
-                    if next(BiaoGe.playerInfo[realmID]) then
+                    if next(ZongLan.playerInfo[realmID]) then
                         local bt = CreateFrame("Button", nil, child)
                         if not buttons[1] then
                             bt:SetPoint("TOPLEFT", child, 0, 0)
                         else
                             bt:SetPoint("TOPLEFT", buttons[#buttons], "BOTTOMLEFT", 0, 0)
                         end
-                        bt:SetNormalFontObject(BG.FontWhite15)
-                        if BiaoGe.realmName[realmID] then
-                            bt:SetText(BiaoGe.realmName[realmID])
+                        bt:SetNormalFontObject(ZL.FontWhite15)
+                        if ZongLan.realmName[realmID] then
+                            bt:SetText(ZongLan.realmName[realmID])
                         else
                             bt:SetText(realmID)
                         end
                         bt:SetSize(child:GetWidth(), 20)
-                        BG.SetTextHighlightTexture(bt)
+                        ZL.SetTextHighlightTexture(bt)
                         tinsert(buttons, bt)
                         local t = bt:GetFontString()
                         t:SetPoint("LEFT")
@@ -1351,14 +1483,14 @@ BG.Init(function()
                         bt:Disable()
                     end
 
-                    for player in pairs(BiaoGe.playerInfo[realmID]) do
+                    for player in pairs(ZongLan.playerInfo[realmID]) do
                         local bt = CreateFrame("Button", nil, child)
                         if not buttons[1] then
                             bt:SetPoint("TOPLEFT", child, 0, 0)
                         else
                             bt:SetPoint("TOPLEFT", buttons[#buttons], "BOTTOMLEFT", 0, 0)
                         end
-                        bt:SetNormalFontObject(BG.FontWhite15)
+                        bt:SetNormalFontObject(ZL.FontWhite15)
                         bt:SetText("   " .. player)
                         bt:SetSize(child:GetWidth(), 20)
                         bt.realmID = realmID
@@ -1378,18 +1510,18 @@ BG.Init(function()
 
                         local t = bt:GetFontString()
                         t:SetPoint("LEFT")
-                        if BiaoGe.playerInfo[realmID] and BiaoGe.playerInfo[realmID][player] and BiaoGe.playerInfo[realmID][player].class then
-                            local r, g, b = GetClassColor(BiaoGe.playerInfo[realmID][player].class)
+                        if ZongLan.playerInfo[realmID] and ZongLan.playerInfo[realmID][player] and ZongLan.playerInfo[realmID][player].class then
+                            local r, g, b = GetClassColor(ZongLan.playerInfo[realmID][player].class)
                             t:SetTextColor(r, g, b)
                             tex:SetVertexColor(r, g, b)
-                            bt:SetText("   " .. player .. " (" .. BiaoGe.playerInfo[realmID][player].level .. ")")
+                            bt:SetText("   " .. player .. " (" .. ZongLan.playerInfo[realmID][player].level .. ")")
                         else
                             t:SetTextColor(.5, .5, .5)
                             tex:SetVertexColor(.5, .5, .5)
                         end
 
                         bt:SetScript("OnClick", function(self)
-                            BG.PlaySound(1)
+                            ZL.PlaySound(1)
                             if self.isChoose then
                                 choose.realmID = nil
                                 choose.player = nil
@@ -1431,25 +1563,25 @@ BG.Init(function()
         -- 删除角色
         local function DeletePlayerData()
             local realmID = GetRealmID()
-            local player = BG.playerName
-            BG.DeletePlayerData(choose.realmID, choose.player)
+            local player = ZL.playerName
+            ZL.DeletePlayerData(choose.realmID, choose.player)
             if realmID == choose.realmID and player == choose.player then
                 ReloadUI()
             else
                 UpdateAllButtons()
             end
         end
-        local bt = BG.CreateButton(f)
+        local bt = ZL.CreateButton(f)
         bt:SetSize(100, 25)
         bt:SetPoint("TOP", 0, -15)
         bt:SetText(L["删除角色"])
         bt:Disable()
-        BG.options.configDeleteButton = bt
+        ZL.options.configDeleteButton = bt
         bt:SetScript("OnEnter", function(self)
             local c2 = "ffFFFFFF"
-            if BiaoGe.playerInfo[choose.realmID] and BiaoGe.playerInfo[choose.realmID][choose.player]
-                and BiaoGe.playerInfo[choose.realmID][choose.player].class then
-                c2 = select(4, GetClassColor(BiaoGe.playerInfo[choose.realmID][choose.player].class))
+            if ZongLan.playerInfo[choose.realmID] and ZongLan.playerInfo[choose.realmID][choose.player]
+                and ZongLan.playerInfo[choose.realmID][choose.player].class then
+                c2 = select(4, GetClassColor(ZongLan.playerInfo[choose.realmID][choose.player].class))
             end
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
@@ -1462,12 +1594,12 @@ BG.Init(function()
         bt:SetScript("OnLeave", GameTooltip_Hide)
         bt:SetScript("OnClick", function(self)
             DeletePlayerData()
-            BG.PlaySound(1)
+            ZL.PlaySound(1)
         end)
     end
 end)
 
 -- debug
-BG.Init2(function(self, event, ...)
-    BG.OpenOption()
-end)
+-- ZL.Init2(function(self, event, ...)
+--     ZL.OpenOption()
+-- end)

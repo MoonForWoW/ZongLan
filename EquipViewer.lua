@@ -5,13 +5,13 @@ local GetClassColor = ns.GetClassColor
 local GetClassName = ns.GetClassName
 local GetItemStats = GetItemStats or C_Item.GetItemStats
 
-BG.Init(function()
+ZL.Init(function()
     -- 多角色装备
     local mainFrame, leftFrame, rightFrame, slotTbl
     local iLevelColor
     local enchantCount
     local gemInfo = {}
-    if BG.IsVanilla then
+    if ZL.IsVanilla then
         enchantCount = {
             INVTYPE_HEAD = 1,           -- 头
             INVTYPE_SHOULDER = 1,       -- 肩膀
@@ -29,7 +29,7 @@ BG.Init(function()
             INVTYPE_RANGED = 1,         -- 远程武器
             INVTYPE_CLOAK = 1,          -- 披风
         }
-    elseif BG.IsTBC then
+    elseif ZL.IsTBC then
         enchantCount = {
             INVTYPE_HEAD = 1,           -- 头
             INVTYPE_SHOULDER = 1,       -- 肩膀
@@ -48,7 +48,7 @@ BG.Init(function()
             INVTYPE_CLOAK = 1,          -- 披风
             INVTYPE_FINGER = { id = 333, level = 360 }
         }
-    elseif BG.IsWLK then
+    elseif ZL.IsWLK then
         enchantCount = {
             INVTYPE_HEAD = 1,           -- 头
             INVTYPE_SHOULDER = 1,       -- 肩膀
@@ -139,7 +139,7 @@ BG.Init(function()
     end
     local function ItemNeedGem(equipLoc, link, skill)
         local gemCount = GetGemCount(link)
-        if BG.verOver3 and equipLoc == "INVTYPE_WAIST" then
+        if ZL.verOver3 and equipLoc == "INVTYPE_WAIST" then
             gemCount = gemCount + 1
         elseif skill then
             local info = gemInfo[equipLoc]
@@ -149,7 +149,7 @@ BG.Init(function()
         end
         return gemCount
     end
-    function BG.GetEnchantInfo(link, skill)
+    function ZL.GetEnchantInfo(link, skill)
         if not link then return end
         local itemID, chant, gem1, gem2, gem3, gem4 = link:match("item:(%d+):(%d-):(%d-):(%d-):(%d-):")
         if itemID then itemID = tonumber(itemID) end
@@ -169,7 +169,7 @@ BG.Init(function()
         f:SetToplevel(true)
         f:SetFrameStrata("HIGH")
         mainFrame = f
-        BG.equipFrame = f
+        ZL.equipFrame = f
         f:SetScript("OnHide", function(self)
             self.equipLoadID = (self.equipLoadID or 0) + 1
             self.realmID = nil
@@ -201,7 +201,7 @@ BG.Init(function()
                 local tex = f:CreateTexture()
                 tex:SetPoint("TOPLEFT", 8, -6)
                 tex:SetSize(16, 16)
-                tex:SetTexture("Interface\\AddOns\\BiaoGe\\Media\\icon\\icon.tga")
+                tex:SetTexture(ns.Interface .. "Media\\icon\\icon.png")
                 tex:SetTexCoord(.1, .9, .1, .9)
 
                 local l = leftFrame:CreateLine()
@@ -212,19 +212,19 @@ BG.Init(function()
                 leftFrame.line = l
 
                 local t = leftFrame:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                t:SetFont(ns.Font, 15, "OUTLINE")
                 t:SetPoint("CENTER", leftFrame, "TOP", 0, -14)
                 t:SetTextColor(1, 1, 1)
                 leftFrame.NameText = t
 
                 local t = leftFrame:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 14, "OUTLINE")
+                t:SetFont(ns.Font, 14, "OUTLINE")
                 t:SetPoint("TOP", leftFrame, "TOP", 0, -30)
                 t:SetTextColor(1, .82, 0)
                 leftFrame.LevelText = t
 
                 local t = leftFrame:CreateFontString()
-                t:SetFont(BIAOGE_TEXT_FONT, 14, "OUTLINE")
+                t:SetFont(ns.Font, 14, "OUTLINE")
                 t:SetPoint("TOP", leftFrame, "TOP", 0, -50)
                 t:SetTextColor(1, .82, 0)
                 leftFrame.iLevelText = t
@@ -235,7 +235,7 @@ BG.Init(function()
                 leftFrame.sets = {}
 
                 local t = leftFrame:CreateFontString(nil, "OVERLAY")
-                t:SetFont(BIAOGE_TEXT_FONT, 14, "OUTLINE")
+                t:SetFont(ns.Font, 14, "OUTLINE")
                 t:SetPoint("BOTTOMLEFT", leftFrame, "TOPLEFT", 5, 0)
                 t:SetTextColor(1, .82, 0)
                 t:SetWidth(leftFrame:GetWidth() - 10)
@@ -244,16 +244,16 @@ BG.Init(function()
             end
 
             -- WLK传家宝附魔
-            if BG.IsWLK then
+            if ZL.IsWLK then
                 local tbl
-                if BG.IsTitan then
+                if ZL.IsTitan then
                     tbl = {
                         50369, 44136, -- T
                         50367, 44133, -- 物理
                         50368, 44135, -- 法系
                         44152, 44134, -- N
                     }
-                elseif BG.IsWLK_80 then
+                elseif ZL.IsWLK_80 then
                     tbl = {
                         44150, 44136, -- T
                         44149, 44133, -- 物理
@@ -283,16 +283,16 @@ BG.Init(function()
                     bt.icon = bt:CreateTexture(nil, "BACKGROUND", nil, 1)
                     bt.icon:SetAllPoints()
                     bt.icon:SetTexture(select(5, GetItemInfoInstant(itemID)))
-                    bt.icon:SetTexCoord(unpack(BG.iconTexCoord))
+                    bt.icon:SetTexCoord(unpack(ZL.iconTexCoord))
 
                     bt.countText = bt:CreateFontString()
-                    bt.countText:SetFont(BIAOGE_TEXT_FONT, 18, "OUTLINE")
+                    bt.countText:SetFont(ns.Font, 18, "OUTLINE")
                     bt.countText:SetPoint("BOTTOM", 0, 1)
                     bt.countText:SetTextColor(0, 1, 0)
                     bt.count = 0
 
                     bt:SetScript("OnEnter", function(self)
-                        if BG.ButtonIsInRight(self) then
+                        if ZL.ButtonIsInRight(self) then
                             GameTooltip:SetOwner(self, "ANCHOR_LEFT", 0, 0)
                         else
                             GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
@@ -352,7 +352,7 @@ BG.Init(function()
                 { slot = "Trinket0Slot", point = "down" },
                 { slot = "Trinket1Slot", point = "down" },
             }
-            if BG.verOver5 then
+            if ZL.verOver5 then
                 tinsert(slotTbl, { slot = "MainHandSlot", point = { "BOTTOmRIGHT", leftFrame, "BOTTOM", 0, 8 } })
                 tinsert(slotTbl, { slot = "SecondaryHandSlot", point = "right" })
             else
@@ -393,16 +393,16 @@ BG.Init(function()
                 bt.icon = bt:CreateTexture(nil, "BACKGROUND", nil, 1)
                 bt.icon:SetAllPoints()
                 bt.icon:SetTexture(textureName)
-                bt.icon:SetTexCoord(unpack(BG.iconTexCoord))
+                bt.icon:SetTexCoord(unpack(ZL.iconTexCoord))
                 bt:SetHighlightTexture([[Interface\Buttons\ButtonHilight-Square]])
 
                 bt.level = bt:CreateFontString()
-                bt.level:SetFont(BIAOGE_TEXT_FONT, 12.5, "OUTLINE")
+                bt.level:SetFont(ns.Font, 12.5, "OUTLINE")
                 bt.level:SetPoint("BOTTOM", 0, 1)
 
                 bt:SetScript("OnEnter", function(self)
                     if not bt.link then return end
-                    if BG.ButtonIsInRight(self) then
+                    if ZL.ButtonIsInRight(self) then
                         GameTooltip:SetOwner(self, "ANCHOR_LEFT", 0, 0)
                     else
                         GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
@@ -435,7 +435,7 @@ BG.Init(function()
             rightFrame = f
 
             local t = f:CreateFontString()
-            t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            t:SetFont(ns.Font, 15, "OUTLINE")
             t:SetPoint("BOTTOM", f, "TOP", 0, 0)
             t:SetTextColor(1, 0.82, 0)
             t:SetText(L["点击角色名字：使面板固定显示"])
@@ -463,7 +463,7 @@ BG.Init(function()
                 tinsert(rightFrame.slotButtons, frame)
                 frame:SetScript("OnEnter", function(self)
                     if not frame.link then return end
-                    if BG.ButtonIsInRight(self.item) then
+                    if ZL.ButtonIsInRight(self.item) then
                         GameTooltip:SetOwner(self.item, "ANCHOR_LEFT", 0, 0)
                     else
                         GameTooltip:SetOwner(self.item, "ANCHOR_RIGHT", 0, 0)
@@ -490,17 +490,17 @@ BG.Init(function()
                 frame.bg = f
 
                 frame.slot = f:CreateFontString()
-                frame.slot:SetFont(BIAOGE_TEXT_FONT, 11, "OUTLINE")
+                frame.slot:SetFont(ns.Font, 11, "OUTLINE")
                 frame.slot:SetPoint("CENTER", f, "CENTER", 0, 0)
                 frame.slot:SetText(_G[slot:upper()])
                 frame.slot.baseColor = { .5, .5, .5 }
 
                 frame.level = frame:CreateFontString()
-                frame.level:SetFont(BIAOGE_TEXT_FONT, 13, "OUTLINE")
+                frame.level:SetFont(ns.Font, 13, "OUTLINE")
                 frame.level:SetPoint("LEFT", frame.bg, "RIGHT", 5, 0)
 
                 frame.item = frame:CreateFontString()
-                frame.item:SetFont(BIAOGE_TEXT_FONT, 13, "OUTLINE")
+                frame.item:SetFont(ns.Font, 13, "OUTLINE")
                 frame.item:SetPoint("LEFT", frame.level, "RIGHT", 2, 0)
                 frame.item:SetJustifyH("CENTER")
             end
@@ -563,7 +563,7 @@ BG.Init(function()
             icon:AddMaskTexture(mask)
             local broder = f:CreateTexture(nil, "OVERLAY")
             broder:SetAllPoints()
-            broder:SetTexture([[Interface\AddOns\BiaoGe\Media\icon\SocketBroder.blp]])
+            broder:SetTexture(ns.Interface ..[[Media\icon\SocketBroder.blp]])
             local alpha = .8
             if type == "chant" then
                 if iconTex then
@@ -590,21 +590,21 @@ BG.Init(function()
             end
             wipe(bt.otherButtons)
             if not link then return end
-            local chant, noChant, gemTbl, gemCount, equipLoc = BG.GetEnchantInfo(link, skill)
+            local chant, noChant, gemTbl, gemCount, equipLoc = ZL.GetEnchantInfo(link, skill)
             if chant then
-                if BG.enchant[chant] then
-                    local itemID = BG.enchant[chant].itemID
+                if ZL.enchant[chant] then
+                    local itemID = ZL.enchant[chant].itemID
                     if itemID then
                         AddEnchant(bt, itemID, nil, "chant")
                     else
-                        local spellID = BG.enchant[chant].spellID
+                        local spellID = ZL.enchant[chant].spellID
                         if spellID then
                             AddEnchant(bt, nil, spellID, "chant")
                         end
                     end
                 else
                     if BGDEBUG then
-                        print("未知附魔：", chant, link)
+                        print(L["未知附魔："], chant, link)
                     end
                 end
             elseif noChant then
@@ -622,7 +622,7 @@ BG.Init(function()
     end
 
     local function GetTooltipSetInfo(link, quality, setName)
-        local tip = BiaoGeTooltip2
+        local tip = ZongLanTooltip
         tip:SetOwner(UIParent, "ANCHOR_NONE")
         tip:ClearLines()
         tip:SetHyperlink(link)
@@ -640,7 +640,7 @@ BG.Init(function()
                     end
                     local r, g, b = GetItemQualityColor(quality)
                     local t = leftFrame.setFrame:CreateFontString()
-                    t:SetFont(BIAOGE_TEXT_FONT, 13, "OUTLINE")
+                    t:SetFont(ns.Font, 13, "OUTLINE")
                     if next(leftFrame.sets) then
                         t:SetPoint("BOTTOM", leftFrame.sets[#leftFrame.sets], "TOP", 0, 2)
                     else
@@ -703,19 +703,19 @@ BG.Init(function()
         mainFrame:SetWidth(leftFrame:GetWidth() + rightFrame:GetWidth())
     end
 
-    function BG.ShowEquipFrame(click, bt, isAccounts, realmID, player,
+    function ZL.ShowEquipFrame(click, bt, isAccounts, realmID, player,
                                 colorplayer, level, class, iLevel, BiaoGeAIdb,
                                 BiaoGeAItalent, points, showRealmName)
         local db
         if not BiaoGeAIdb then
             if isAccounts then
-                db = BiaoGeAccounts
+                db = ZongLanDB
             else
-                db = BiaoGe
+                db = ZongLan
             end
             if not (db.equip and db.equip[realmID] and db.equip[realmID][player]) then
                 GameTooltip:SetOwner(bt, "ANCHOR_NONE", 0, 0)
-                if bt.isFBCD or BiaoGe.options.roleOverviewLayout == "left_right" then
+                if bt.isFBCD or ZongLan.options.roleOverviewLayout == "left_right" then
                     GameTooltip:SetPoint("TOPRIGHT", bt, "TOPLEFT", -12, 0)
                 else
                     GameTooltip:SetPoint("BOTTOMRIGHT", bt, "BOTTOMLEFT", -12, 0)
@@ -778,7 +778,7 @@ BG.Init(function()
             mainFrame:SetPoint(unpack(points))
         elseif BiaoGeAIdb then
             mainFrame:SetPoint("TOPLEFT", bt, "TOPRIGHT", 1, 0)
-        elseif bt.isFBCD or BiaoGe.options.roleOverviewLayout == "left_right" then
+        elseif bt.isFBCD or ZongLan.options.roleOverviewLayout == "left_right" then
             mainFrame:SetPoint("TOPRIGHT", bt, "TOPLEFT", -10, 0)
         else
             mainFrame:SetPoint("BOTTOMRIGHT", bt, "BOTTOMLEFT", -10, 0)
@@ -793,19 +793,19 @@ BG.Init(function()
         wipe(leftFrame.sets)
 
         local talentText = ""
-        if BG.GetTalentIcon then
+        if ZL.GetTalentIcon then
             local talent
             if BiaoGeAIdb then
                 talent = BiaoGeAItalent
             else
                 talent = BiaoGeAItalent or db.playerInfo[realmID][player].talent
             end
-            talentText = BG.GetTalentIcon(class, talent)
+            talentText = ZL.GetTalentIcon(class, talent)
         end
         local realmName = ""
         if showRealmName then
             local name = (db and db.realmName and db.realmName[realmID])
-                or (BiaoGe.realmName and BiaoGe.realmName[realmID]) or realmID
+                or (ZongLan.realmName and ZongLan.realmName[realmID]) or realmID
             realmName = format("|c%s%s-|r", color, name)
         end
         leftFrame.NameText:SetText(talentText .. realmName .. colorplayer)
@@ -817,12 +817,12 @@ BG.Init(function()
         leftFrame.iLevelText:SetText(L["装等："] .. (iLevel and ns.Round(iLevel, 1) or UNKNOWN))
 
         -- 子账号
-        if not BiaoGeAIdb and BiaoGeAccounts and BiaoGeAccounts.accountName then
+        if not BiaoGeAIdb and ZongLanDB and ZongLanDB.accountName then
             local tbl = {}
-            for accountName in pairs(BiaoGeAccounts.accountName) do
-                for _realmID in pairs(BiaoGeAccounts.accountName[accountName]) do
+            for accountName in pairs(ZongLanDB.accountName) do
+                for _realmID in pairs(ZongLanDB.accountName[accountName]) do
                     if realmID == _realmID then
-                        for _player in pairs(BiaoGeAccounts.accountName[accountName][realmID]) do
+                        for _player in pairs(ZongLanDB.accountName[accountName][realmID]) do
                             if player == _player then
                                 tinsert(tbl, accountName)
                             end
@@ -832,7 +832,7 @@ BG.Init(function()
             end
             local sameText = ""
             if #tbl > 1 then
-                sameText = L["|cffff0000（角色存在重复情况，会导致同步失效和数据错误。请登录上述账号，表格设置-角色配置-删除角色。）|r"]
+                sameText = L["|cffff0000（角色存在重复情况，导致数据错误）|r"]
             end
             leftFrame.accountText:SetText(L["子账号："] .. table.concat(tbl, L["，"]) .. sameText)
         else
@@ -909,8 +909,8 @@ BG.Init(function()
                 else
                     local count = 0
                     local itemID = bt.itemID
-                    if db.bag and db.bag[realmID] and db.bag[realmID][player] and BG.GetItemBagCount then
-                        count = BG.GetItemBagCount(db.bag[realmID][player], itemID) or 0
+                    if db.bag and db.bag[realmID] and db.bag[realmID][player] and ZL.GetItemBagCount then
+                        count = ZL.GetItemBagCount(db.bag[realmID][player], itemID) or 0
                     end
                     bt.count = count
                     bt:Update()

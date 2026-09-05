@@ -11,54 +11,51 @@ ns.LibBG                                    = LibBG
 LibBG.UIDropDownMenu_HandleGlobalMouseEvent = function() end
 
 local realmID                               = GetRealmID()
-local player                                = BG.playerName
-local realmName                             = BG.realmName
+local player                                = ZL.playerName
+local realmName                             = ZL.realmName
 local GetAddOnMetadata                      = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
 local IsAddOnLoaded                         = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 local LoadAddOn                             = LoadAddOn or C_AddOns.LoadAddOn
 
+ZongLanTooltip                              = CreateFrame("GameTooltip", "ZongLanTooltip", UIParent, "GameTooltipTemplate") -- 用于装等获取
+
+-- 游戏按键设置
+BINDING_HEADER_ZONGLAN                      = "ZongLan"
+BINDING_NAME_ZONGLAN_ROLEOVERVIEW           = L["打开/关闭角色总览"]
+
+ZL.blackListPlayer                          = {
+}
+if ZL.blackListPlayer[realmID] and ZL.blackListPlayer[realmID][ZL.playerName] then
+end
+
+ns.Interface = "Interface\\AddOns\\" .. AddonName .. "\\"
+
 -- 全局变量
 do
-    BG.FBtable = {}
-    BG.FBtable2 = {}
-    BG.FBIDtable = {}
-    BG.lootQuality = {}
-    BG.difficultyTable = {}
-    BG.diffIDTbl = {}
-    BG.phaseFBtable = {}
-    BG.bossPositionStartEnd = {}
-    BG.FBfromBossPosition = {}
-    BG.Movetable = {}
-    BG.options = {}
-    BG.itemCaches = {}
-    BG.dropDown = LibBG:Create_UIDropDownMenu(nil, UIParent)
-    BG.onEnterAlpha = 0.1
-    BG.highLightAlpha = 0.2
-    BG.otherEditAlpha = 0.3
-    BG.scrollStep = 80
-    BG.borderAlpha = .5
-    BG.ver = "v" .. GetAddOnMetadata(AddonName, "Version")
-    BG.BG = "|cff00BFFF<BiaoGe>|r "
-    BG.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
-    BG.iconTexCoord = { .07, .93, .07, .93 }
-    BG.zaxiang = {} -- 杂项如果太多，则需要换列
-    BG.zhuangbeiWidth = 140
-    BG.zhuangbeiWidth2 = 235
-    BG.maijiaWidth = 90
-    BG.jineWidth = 90
-    BG.spFB = {}
-    BG.fakuanIsFirst = {}
-    BG.editTemplate = "BiaoGe_InputBoxTemplate" or "InputBoxTemplate"
-    BG.editSearchTemplate = "BiaoGe_SearchBoxTemplate" or "SearchBoxTemplate"
-    BG.scrollTemplate = "BiaoGe_ModernScrollFrameTemplate" or "UIPanelScrollFrameTemplate"
-    BG.notLootBossIDs = {}
-    BG.itemOnEnterDelay = 0.02
-    BG.addonChannelCount = 10
-    BG.LastBagItemFrame = {}
-    if BG.IsRetail then
-        BG.CloseButtonOffset = 0
+    ZL.Movetable = {}
+    ZL.options = {}
+    ZL.itemCaches = {}
+    ZL.dropDown = LibBG:Create_UIDropDownMenu(nil, UIParent)
+    ZL.onEnterAlpha = 0.1
+    ZL.highLightAlpha = 0.2
+    ZL.otherEditAlpha = 0.3
+    ZL.scrollStep = 80
+    ZL.borderAlpha = .5
+    ZL.ver = "v" .. GetAddOnMetadata(AddonName, "Version")
+    ZL.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
+    ZL.iconTexCoord = { .07, .93, .07, .93 }
+    ZL.fakuanIsFirst = {}
+    ZL.editTemplate = "ZongLan_InputBoxTemplate" or "InputBoxTemplate"
+    ZL.editSearchTemplate = "ZongLan_SearchBoxTemplate" or "SearchBoxTemplate"
+    ZL.scrollTemplate = "ZongLan_ModernScrollFrameTemplate" or "UIPanelScrollFrameTemplate"
+    ZL.notLootBossIDs = {}
+    ZL.itemOnEnterDelay = 0.02
+    ZL.addonChannelCount = 10
+    ZL.LastBagItemFrame = {}
+    if ZL.IsRetail then
+        ZL.CloseButtonOffset = 0
     else
-        BG.CloseButtonOffset = 2
+        ZL.CloseButtonOffset = 2
     end
 end
 
@@ -66,46 +63,46 @@ end
 do
     -- 基础信息
     do
-        if BG.IsVanilla_Sod then
-            BG.FB1 = "MCsod"
-            BG.fullLevel = 60
-            BG.fullLevel_RoleOverview = 25
+        if ZL.IsVanilla_Sod then
+            ZL.FB1 = "MCsod"
+            ZL.fullLevel = 60
+            ZL.fullLevel_RoleOverview = 25
         end
-        if BG.IsVanilla_60 then
-            BG.fullLevel = 60
-            BG.fullLevel_RoleOverview = 35
+        if ZL.IsVanilla_60 then
+            ZL.fullLevel = 60
+            ZL.fullLevel_RoleOverview = 35
         end
-        if BG.IsTBC then
-            BG.fullLevel = 70
-            BG.fullLevel_RoleOverview = 35
+        if ZL.IsTBC then
+            ZL.fullLevel = 70
+            ZL.fullLevel_RoleOverview = 35
         end
-        if BG.IsWLK_80 then
-            BG.fullLevel = 80
-            BG.fullLevel_RoleOverview = 60
+        if ZL.IsWLK_80 then
+            ZL.fullLevel = 80
+            ZL.fullLevel_RoleOverview = 60
         end
-        if BG.IsTitan then
-            BG.fullLevel = 80
-            BG.fullLevel_RoleOverview = 60
+        if ZL.IsTitan then
+            ZL.fullLevel = 80
+            ZL.fullLevel_RoleOverview = 60
         end
-        if BG.IsCTM then
-            BG.fullLevel = 85
-            BG.fullLevel_RoleOverview = 70
+        if ZL.IsCTM then
+            ZL.fullLevel = 85
+            ZL.fullLevel_RoleOverview = 70
         end
-        if BG.IsMOP then
-            BG.fullLevel = 90
-            BG.fullLevel_RoleOverview = 80
-            BG.worldBossID = { 32098, 32099, 32518, 32519, 33117, 33118, } -- 炮舰 怒之煞 暴风领主纳拉克 乌达斯塔 四天神 野牛人
+        if ZL.IsMOP then
+            ZL.fullLevel = 90
+            ZL.fullLevel_RoleOverview = 80
+            ZL.worldBossID = { 32098, 32099, 32518, 32519, 33117, 33118, } -- 炮舰 怒之煞 暴风领主纳拉克 乌达斯塔 四天神 野牛人
         end
-        if BG.IsRetail then
-            BG.fullLevel = 90
-            BG.fullLevel_RoleOverview = 80
+        if ZL.IsRetail then
+            ZL.fullLevel = 90
+            ZL.fullLevel_RoleOverview = 80
         end
     end
 
     -- 颜色
     do
-        BG.b1 = "00BFFF"
-        function BG.STC_b1(text)
+        ZL.b1 = "00BFFF"
+        function ZL.STC_b1(text)
             if text then
                 local t
                 t = "|cff" .. "00BFFF" .. text .. "|r"
@@ -113,8 +110,8 @@ do
             end
         end
 
-        BG.r1 = "FF0000"
-        function BG.STC_r1(text)
+        ZL.r1 = "FF0000"
+        function ZL.STC_r1(text)
             if text then
                 local t
                 t = "|cff" .. "FF0000" .. text .. "|r"
@@ -122,8 +119,8 @@ do
             end
         end
 
-        BG.r2 = "FF1493"
-        function BG.STC_r2(text)
+        ZL.r2 = "FF1493"
+        function ZL.STC_r2(text)
             if text then
                 local t
                 t = "|cff" .. "FF1493" .. text .. "|r"
@@ -131,8 +128,8 @@ do
             end
         end
 
-        BG.r3 = "FF69B4"
-        function BG.STC_r3(text)
+        ZL.r3 = "FF69B4"
+        function ZL.STC_r3(text)
             if text then
                 local t
                 t = "|cff" .. "FF69B4" .. text .. "|r"
@@ -140,8 +137,8 @@ do
             end
         end
 
-        BG.g1 = "00FF00"
-        function BG.STC_g1(text)
+        ZL.g1 = "00FF00"
+        function ZL.STC_g1(text)
             if text then
                 local t
                 t = "|cff" .. "00FF00" .. text .. "|r"
@@ -149,8 +146,8 @@ do
             end
         end
 
-        BG.g2 = "40c040"
-        function BG.STC_g2(text)
+        ZL.g2 = "40c040"
+        function ZL.STC_g2(text)
             if text then
                 local t
                 t = "|cff" .. "40c040" .. text .. "|r"
@@ -158,8 +155,8 @@ do
             end
         end
 
-        BG.y1 = "FFFF00"
-        function BG.STC_y1(text) -- yellow
+        ZL.y1 = "FFFF00"
+        function ZL.STC_y1(text) -- yellow
             if text then
                 local t
                 t = "|cff" .. "FFFF00" .. text .. "|r"
@@ -167,8 +164,8 @@ do
             end
         end
 
-        BG.y2 = "FFD100"
-        function BG.STC_y2(text) -- gold
+        ZL.y2 = "FFD100"
+        function ZL.STC_y2(text) -- gold
             if text then
                 local t
                 t = "|cff" .. "FFD100" .. text .. "|r"
@@ -176,8 +173,8 @@ do
             end
         end
 
-        BG.w1 = "FFFFFF"
-        function BG.STC_w1(text) -- 白色
+        ZL.w1 = "FFFFFF"
+        function ZL.STC_w1(text) -- 白色
             if text then
                 local t
                 t = "|cff" .. "FFFFFF" .. text .. "|r"
@@ -185,8 +182,8 @@ do
             end
         end
 
-        BG.dis = "808080"
-        function BG.STC_dis(text) -- 灰色
+        ZL.dis = "808080"
+        function ZL.STC_dis(text) -- 灰色
             if text then
                 local t
                 t = "|cff" .. "808080" .. text .. "|r"
@@ -197,16 +194,16 @@ do
 
     -- 声音
     do
-        BG.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK -- 按键音效
-        BG.sound2 = 569593                      -- 升级音效
-        BG.sound3 = SOUNDKIT.IG_MAINMENU_CLOSE  -- 菜单打开音效
+        ZL.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK -- 按键音效
+        ZL.sound2 = 569593                      -- 升级音效
+        ZL.sound3 = SOUNDKIT.IG_MAINMENU_CLOSE  -- 菜单打开音效
 
-        local Interface = "Interface\\AddOns\\BiaoGe\\Media\\sound\\"
-        BG.soundAuthor = {
+        local Interface = ns.Interface .. "Media\\sound\\"
+        ZL.soundAuthor = {
             { ID = "AI", addonName = AddonName, isBiaoGe = true },
         }
-        BG.soundTbl = BG.soundAuthor
-        BG.soundTbl2 = {
+        ZL.soundTbl = ZL.soundAuthor
+        ZL.soundTbl2 = {
             { ID = "paimai", name = "拍卖啦" },
             { ID = "hope", name = "心愿达成" },
             { ID = "qingkong", name = "已清空表格" },
@@ -232,8 +229,8 @@ do
             { ID = "tooLate", name = "请不要卡秒出价" },
         }
         --[[
-/run BG.PlaySound("paimai")
-/run BG.PlaySound("hope")
+/run ZL.PlaySound("paimai")
+/run ZL.PlaySound("hope")
 ]]
         local function DefaultSound()
             for i = 1, C_AddOns.GetNumAddOns() do
@@ -241,46 +238,46 @@ do
                 local enabled = C_AddOns.GetAddOnEnableState(i, player)
                 if C_AddOns.GetAddOnMetadata(i, "X-BiaoGe-Voice") and enabled ~= 0 then
                     local author = C_AddOns.GetAddOnMetadata(i, "Author")
-                    tinsert(BG.soundAuthor, { ID = author, addonName = addonName })
+                    tinsert(ZL.soundAuthor, { ID = author, addonName = addonName })
                 end
             end
-            for _, value in ipairs(BG.soundAuthor) do
+            for _, value in ipairs(ZL.soundAuthor) do
                 local author = value.ID
                 local addonName = value.addonName
                 local isBiaoGe = value.isBiaoGe
-                for _, v in ipairs(BG.soundTbl2) do
+                for _, v in ipairs(ZL.soundTbl2) do
                     local soundID = v.ID
                     local soundName = v.name
                     if isBiaoGe then
-                        BG["sound_" .. soundID .. author] = Interface .. author .. "\\" .. soundID
+                        ZL["sound_" .. soundID .. author] = Interface .. author .. "\\" .. soundID
                     else
-                        BG["sound_" .. soundID .. author] = format("Interface\\AddOns\\%s\\sound\\%s", addonName, soundName)
+                        ZL["sound_" .. soundID .. author] = format("Interface\\AddOns\\%s\\sound\\%s", addonName, soundName)
                     end
                 end
             end
 
             local yes
-            for i, v in ipairs(BG.soundAuthor) do
-                if BiaoGe.options.Sound == v.ID then
+            for i, v in ipairs(ZL.soundAuthor) do
+                if ZongLan.options.Sound == v.ID then
                     yes = true
                 end
             end
             if not yes then
-                BiaoGe.options.Sound = "AI"
+                ZongLan.options.Sound = "AI"
             end
         end
 
-        BG.Init2(function()
+        ZL.Init2(function()
             DefaultSound()
         end)
     end
 
-    BG.classColorNames = {}
+    ZL.classColorNames = {}
     for i = 1, GetNumClasses() do
         local className, classFilename = GetClassInfo(i)
         if className then
             local color = select(4, GetClassColor(classFilename))
-            BG.classColorNames[className] = format("|c%s%s|r", color, className)
+            ZL.classColorNames[className] = format("|c%s%s|r", color, className)
         end
     end
 
@@ -305,46 +302,46 @@ do
 end
 
 -- 本地配置数据库
-BG.Init(function()
-    if type(BiaoGe) ~= "table" then
-        BiaoGe = {}
+ZL.Init(function()
+    if type(ZongLan) ~= "table" then
+        ZongLan = {}
     end
-    if not BiaoGe.point then
-        BiaoGe.point = {}
+    if not ZongLan.point then
+        ZongLan.point = {}
     end
 
-    if not BiaoGe.options then
-        BiaoGe.options = {}
+    if not ZongLan.options then
+        ZongLan.options = {}
     end
     
-    if not BiaoGe.options.SearchHistory then
-        BiaoGe.options.SearchHistory = {}
+    if not ZongLan.options.SearchHistory then
+        ZongLan.options.SearchHistory = {}
     end
 
     -- 记录服务器名称
     do
-        BiaoGe.realmName = BiaoGe.realmName or {}
-        BiaoGe.realmName[realmID] = realmName
+        ZongLan.realmName = ZongLan.realmName or {}
+        ZongLan.realmName[realmID] = realmName
     end
     -- 记录每个角色的职业、等级、天赋
     do
-        BiaoGe.playerInfo = BiaoGe.playerInfo or {}
-        BiaoGe.playerInfo[realmID] = BiaoGe.playerInfo[realmID] or {}
-        BiaoGe.playerInfo[realmID][player] = BiaoGe.playerInfo[realmID][player] or {}
-        BiaoGe.playerInfo[realmID][player].class = select(2, UnitClass("player"))
-        BiaoGe.playerInfo[realmID][player].raceID = select(3, UnitRace("player"))
-        BiaoGe.playerInfo[realmID][player].faction = UnitFactionGroup("player")
-        BiaoGe.playerInfo[realmID][player].iLevel = select(2, GetAverageItemLevel()) or 0
+        ZongLan.playerInfo = ZongLan.playerInfo or {}
+        ZongLan.playerInfo[realmID] = ZongLan.playerInfo[realmID] or {}
+        ZongLan.playerInfo[realmID][player] = ZongLan.playerInfo[realmID][player] or {}
+        ZongLan.playerInfo[realmID][player].class = select(2, UnitClass("player"))
+        ZongLan.playerInfo[realmID][player].raceID = select(3, UnitRace("player"))
+        ZongLan.playerInfo[realmID][player].faction = UnitFactionGroup("player")
+        ZongLan.playerInfo[realmID][player].iLevel = select(2, GetAverageItemLevel()) or 0
 
         local function UpdateLevel(level)
-            BiaoGe.playerInfo[realmID][player].level = level
-            BG.isFullLevel = level >= BG.fullLevel
+            ZongLan.playerInfo[realmID][player].level = level
+            ZL.isFullLevel = level >= ZL.fullLevel
         end
         UpdateLevel(UnitLevel("player"))
-        BG.RegisterEvent("PLAYER_LEVEL_UP", function(self, event, level)
+        ZL.RegisterEvent("PLAYER_LEVEL_UP", function(self, event, level)
             UpdateLevel(level)
-            if BG.UpdateMeetingHornLevelButton then
-                BG.UpdateMeetingHornLevelButton()
+            if ZL.UpdateMeetingHornLevelButton then
+                ZL.UpdateMeetingHornLevelButton()
             end
         end)
 
@@ -352,7 +349,7 @@ BG.Init(function()
         do
             local function GetTalent(_, event)
                 local specIndex
-                if BG.verOver4 then
+                if ZL.verOver4 then
                     specIndex = C_SpecializationInfo.GetSpecialization()
                     if specIndex == 0 or specIndex == 5 then
                         specIndex = nil
@@ -368,13 +365,13 @@ BG.Init(function()
                     end
                     if maxNum == 0 then specIndex = nil end
                 end
-                BiaoGe.playerInfo[realmID][player].talent = specIndex
+                ZongLan.playerInfo[realmID][player].talent = specIndex
             end
 
             local f = CreateFrame("Frame")
             f:RegisterEvent("PLAYER_TALENT_UPDATE")
             f:RegisterEvent("PLAYER_ENTERING_WORLD")
-            if BG.verOver4 then
+            if ZL.verOver4 then
                 f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
             end
             f:SetScript("OnEvent", function(self, event, ...)
@@ -391,20 +388,20 @@ BG.Init(function()
                 end)
             end)
 
-            function BG.GetTalentIcon(class, talent, w)
+            function ZL.GetTalentIcon(class, talent, w)
                 w = w or 0
                 if talent then
-                    local a, b, c, d = unpack(BG.iconTexCoord)
+                    local a, b, c, d = unpack(ZL.iconTexCoord)
                     local coord = format("100:100:%s:%s:%s:%s", a * 100, b * 100, c * 100, d * 100)
-                    local tex = BG.talentIcon[class][talent]
+                    local tex = ZL.talentIcon[class][talent]
                     if tex then
-                        return format("|T%s:%s:%s:0:0:%s|t", BG.talentIcon[class][talent], w, w, coord)
+                        return format("|T%s:%s:%s:0:0:%s|t", ZL.talentIcon[class][talent], w, w, coord)
                     end
                 end
                 return format("|A:GarrMission_ClassIcon-%s:%s:%s|a", class, w, w)
             end
 
-            BG.talentIcon = {
+            ZL.talentIcon = {
                 DEATHKNIGHT = {
                     "Interface\\Icons\\Spell_Deathknight_BloodPresence", -- T
                     "Interface\\Icons\\Spell_Deathknight_FrostPresence",
@@ -466,15 +463,15 @@ BG.Init(function()
                     "Interface\\Icons\\spell_shadow_shadowwordpain",
                 },
             }
-            if BG.verOver4 then
-                BG.talentIcon.DRUID = {
+            if ZL.verOver4 then
+                ZL.talentIcon.DRUID = {
                     "Interface\\Icons\\spell_nature_starfall",     -- 鸟
                     "Interface\\Icons\\ability_druid_catform",     -- 猫
                     "Interface\\Icons\\ability_racial_bearform",   -- 熊
                     "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
                 }
             else
-                BG.talentIcon.DRUID = {
+                ZL.talentIcon.DRUID = {
                     "Interface\\Icons\\spell_nature_starfall",
                     "Interface\\Icons\\ability_racial_bearform",
                     "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
@@ -524,15 +521,15 @@ BG.Init(function()
                 "SKURRI_CYR.TTF",
             }
         end
-        BiaoGe.font = BiaoGe.font or default
+        ZongLan.font = ZongLan.font or default
 
         local t = UIParent:CreateFontString()
-        t:SetFont(format("Fonts\\%s", BiaoGe.font), 15, "OUTLINE")
+        t:SetFont(format("Fonts\\%s", ZongLan.font), 15, "OUTLINE")
         t:Hide()
         if not t:GetFont() then
-            BiaoGe.font = default
+            ZongLan.font = default
         end
-        BIAOGE_TEXT_FONT = format("Fonts\\%s", BiaoGe.font)
+        ns.Font = format("Fonts\\%s", ZongLan.font)
 
         if list then
             for i = #list, 1, -1 do
@@ -544,12 +541,12 @@ BG.Init(function()
                 end
             end
         end
-        BG.fontList = list
+        ZL.fontList = list
 
         local name = "editFontSize"
-        BiaoGe.options[name] = BiaoGe.options[name] or 14
-        function BiaoGe_InputBoxTemplate_OnLoad(self)
-            self:SetFont(BIAOGE_TEXT_FONT, BiaoGe.options[name], "OUTLINE")
+        ZongLan.options[name] = ZongLan.options[name] or 14
+        function ZongLan_InputBoxTemplate_OnLoad(self)
+            self:SetFont(ns.Font, ZongLan.options[name], "OUTLINE")
         end
     end
 
@@ -576,9 +573,9 @@ BG.Init(function()
             elseif color == "Dis" then
                 cff = "808080"
             end
-            BG["Font" .. color .. size] = CreateFont("BG.Font" .. color .. size)
-            BG["Font" .. color .. size]:SetTextColor(RGB(cff))
-            BG["Font" .. color .. size]:SetFont(BIAOGE_TEXT_FONT, size, "OUTLINE")
+            ZL["Font" .. color .. size] = CreateFont("ZL.Font" .. color .. size)
+            ZL["Font" .. color .. size]:SetTextColor(RGB(cff))
+            ZL["Font" .. color .. size]:SetFont(ns.Font, size, "OUTLINE")
         end
 
         CreateMyFont("Blue", 13)
@@ -613,8 +610,17 @@ BG.Init(function()
 end)
 
 -- 命令行
-SlashCmdList["BiaoGeRoleOverview"] = function()
-    BG.SetFBCD(nil, nil, true)
+SlashCmdList["ZongLanRoleOverview"] = function()
+    ZL.SetFBCD(nil, nil, true)
 end
-SLASH_BiaoGeRoleOverview1 = "/bgr"
-SLASH_Baganator2 = nil
+SLASH_ZongLanRoleOverview1 = "/zl"
+SLASH_ZongLanRoleOverview2 = "/zonglan"
+
+SlashCmdList["ZongLanRoleOverviewError"] = function()
+    BG.After(0, function()
+        ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
+        ChatEdit_ChooseBoxForSend():SetText("https://docs.qq.com/doc/DYVFDaU5uR21sanJm")
+        ChatEdit_ChooseBoxForSend():HighlightText()
+    end)
+end
+SLASH_ZongLanRoleOverviewError1 = "/zle"
