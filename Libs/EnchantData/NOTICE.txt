@@ -16,5 +16,5 @@ following projects:
    License: MIT
    The complete license text is in LICENSE-tdInspect.txt.
 
-Modifications for BiaoGe include combining the two data sources, adapting their
-data-loading code, and storing the resulting enchantment records in BG.enchant.
+Modifications for ZongLan include combining the two data sources, adapting their
+data-loading code, and storing the resulting enchantment records in ZL.enchant.

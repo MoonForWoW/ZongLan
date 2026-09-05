@@ -7,7 +7,7 @@ Upstream rights statement:
 "All Rights Reserved unless otherwise explicitly stated."
 
 The upstream project documentation instructs addon authors to hard-embed this
-library. BiaoGe includes it in that documented embedded form. Copyright remains
+library. ZongLan includes it in that documented embedded form. Copyright remains
 with the upstream author and contributors. This notice does not claim or grant
 an open-source license.
 ]]

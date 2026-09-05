@@ -11,7 +11,7 @@ This file contains modified enchantment data derived from:
    Licensed under the MIT License.
    See LICENSE-tdInspect.txt in this directory.
 
-The source data was adapted and combined for BiaoGe.
+The source data was adapted and combined for ZongLan.
 See NOTICE.txt in this directory for source details.
 ]]
 

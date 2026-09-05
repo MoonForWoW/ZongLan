@@ -204,29 +204,9 @@ do
         }
         ZL.soundTbl = ZL.soundAuthor
         ZL.soundTbl2 = {
-            { ID = "paimai", name = "拍卖啦" },
-            { ID = "hope", name = "心愿达成" },
-            { ID = "qingkong", name = "已清空表格" },
-            { ID = "cehuiqingkong", name = "已撤回清空" },
             { ID = "alchemyReady", name = "炼金转化已就绪" },
             { ID = "tailorReady", name = "裁缝洗布已就绪" },
             { ID = "leatherworkingReady", name = "制皮筛盐已就绪" },
-            { ID = "pingjia", name = "给个评价吧" },
-            { ID = "biaogefull", name = "表格满了" },
-            { ID = "guoqi", name = "装备快过期了" },
-            { ID = "uploading", name = "账单正在上传" },
-            { ID = "uploaded", name = "账单上传成功" },
-            { ID = "countDownStop", name = "倒数暂停" },
-            { ID = "HusbandComeOn", name = "老公加油" },
-            { ID = "qiankuan", name = "你有未收欠款" },
-            { ID = "autoAuctionAutoEndTips", name = "自动出价结束" },
-            { ID = "tradeSuccess", name = "交易成功" },
-            { ID = "tradeFalse", name = "交易失败" },
-            { ID = "fakuanFull", name = "罚款格子满了" },
-            { ID = "auctionError", name = "拍卖出错了" },
-            { ID = "currencyfull", name = "牌子满了" },
-            { ID = "auctionTopPrice", name = "小心偷家" },
-            { ID = "tooLate", name = "请不要卡秒出价" },
         }
         --[[
 /run ZL.PlaySound("paimai")
@@ -617,7 +597,7 @@ SLASH_ZongLanRoleOverview1 = "/zl"
 SLASH_ZongLanRoleOverview2 = "/zonglan"
 
 SlashCmdList["ZongLanRoleOverviewError"] = function()
-    BG.After(0, function()
+    C_Timer.After(0, function()
         ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
         ChatEdit_ChooseBoxForSend():SetText("https://docs.qq.com/doc/DYVFDaU5uR21sanJm")
         ChatEdit_ChooseBoxForSend():HighlightText()

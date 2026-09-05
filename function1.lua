@@ -51,19 +51,6 @@ local function RGB_16(name, r, g, b)
 end
 ns.RGB_16 = RGB_16
 
--- 第几个BOSS
-local function BossNum(FB, b, t)
-    local tbl = ZL.BossNumtbl[FB]
-    local bb
-    if tbl[t + 1] then
-        bb = tbl[t + 1] - tbl[t]
-    else
-        bb = Maxb[FB] + 2 - tbl[t]
-    end
-    return b + tbl[t], bb, t, b
-end
-ns.BossNum = BossNum
-
 ------------------在文本里插入材质图标------------------
 local function AddTexture(Texture, y, coord, width)
     if not Texture then
@@ -91,7 +78,7 @@ local function AddTexture(Texture, y, coord, width)
         return t
     elseif Texture == "QUEST" then -- 黄色感叹号
         tex = "Interface\\GossipFrame\\AvailableQuestIcon"
-    elseif Texture == "logo" then         
+    elseif Texture == "logo" then
         tex = ns.Interface .. "Media\\icon\\icon.png"
     elseif Texture == "LEFT" then
         return "|A:NPE_LeftClick:0:0|a"
@@ -104,16 +91,6 @@ local function AddTexture(Texture, y, coord, width)
     return "|T" .. tex .. ":" .. width .. ":" .. width .. ":" .. x .. ":" .. y .. coord .. "|t"
 end
 ns.AddTexture = AddTexture
-
-local function CreateLine(parent, y, width, height, color, alpha)
-    local line = parent:CreateLine()
-    line:SetColorTexture(RGB(color or "808080", alpha or 1))
-    line:SetStartPoint("BOTTOMLEFT", 0, y)
-    line:SetEndPoint("BOTTOMLEFT", width, y)
-    line:SetThickness(height or 1.5)
-    return line
-end
-ns.CreateLine = CreateLine
 
 local classNameTbl = {
     WARRIOR = GetClassInfo(1),
@@ -188,43 +165,6 @@ local function GetItemID(text)
     return tonumber(text:match("item:(%d+):"))
 end
 ns.GetItemID = GetItemID
-
-------------------函数：隐藏窗口------------------   -- 0：隐藏焦点+全部框架，1：隐藏全部框架，2：隐藏除历史表格外的框架
-function ZL.FrameHide(num)
-    if num == 0 then
-        if ZL.lastfocus then
-            ZL.lastfocus:ClearFocus()
-        end
-    end
-    if ZL.FrameZhuangbeiList then
-        ZL.FrameZhuangbeiList:Hide()
-    end
-    if ZL.FrameMaijiaList then
-        ZL.FrameMaijiaList:Hide()
-    end
-    if ZL.FrameJineList then
-        ZL.FrameJineList:Hide()
-    end
-    if num ~= 2 then -- num是0就取消焦点，其他数字就不取消焦点
-        if ZL.History then
-            if ZL.History.List then
-                ZL.History.List:Hide()
-            end
-        end
-    end
-    if ZL.ButtonAucitonWA and ZL.ButtonAucitonWA.frame then
-        ZL.ButtonAucitonWA.frame:Hide()
-    end
-    if ZL.frameExportHope then
-        ZL.frameExportHope:Hide()
-    end
-    if ZL.frameImportHope then
-        ZL.frameImportHope:Hide()
-    end
-    if ZL.auctionLogFrame and ZL.auctionLogFrame.changeFrame then
-        ZL.auctionLogFrame.changeFrame:Hide()
-    end
-end
 
 ------------------隐藏提示工具------------------
 local function GameTooltip_Hide()
@@ -310,14 +250,6 @@ function ZL.ButtonTextSetWordWrap(bt)
     t:SetWordWrap(false)
 end
 
-----------滚动到最末----------
-function ZL.SetScrollBottom(scroll, child)
-    local offset = child:GetHeight() - scroll:GetHeight()
-    if offset > 0 then
-        scroll:SetVerticalScroll(offset)
-    end
-end
-
 ----------高亮按钮----------
 function ZL.SetTextHighlightTexture(bt)
     local tex = bt:CreateTexture()
@@ -381,7 +313,7 @@ function ZL.GetItemCount(itemIDorLink)
 end
 
 function ZL.SendSystemMessage(msg)
-    SendSystemMessage(ZL.STC_b1("<BiaoGe>") .. " " .. msg)
+    SendSystemMessage(ZL.STC_b1("<" .. AddonName .. ">") .. " " .. msg)
 end
 
 ns.SendSystemMessage = ZL.SendSystemMessage
@@ -716,26 +648,6 @@ do
         ZL.SetMixin(bt, btMixin)
         return bt
     end
-end
-
-function ZL.IsSetBestPriceKeyDown(isRightClick)
-    if ZL.SetBestPrice then
-        if ZL.IsML then
-            return IsAltKeyDown() and IsControlKeyDown()
-        else
-            return isRightClick and IsAltKeyDown()
-        end
-    end
-end
-
-------------------模板：创建蓝底高光材质------------------
-function ZL.Create_BlinkHilight(Parent, level)
-    local f = CreateFrame("Frame", nil, Parent)
-    f:SetFrameLevel(level or Parent:GetFrameLevel() - 1)
-    local texture = f:CreateTexture(nil, "BACKGROUND") -- 高亮材质
-    texture:SetAllPoints()
-    texture:SetTexture("Interface/ChatFrame/UI-ChatIcon-BlinkHilight")
-    return f
 end
 
 ------------------复原一个设置------------------
