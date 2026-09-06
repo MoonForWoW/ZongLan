@@ -436,9 +436,9 @@ ZL.Init(function()
 
             local t = f:CreateFontString()
             t:SetFont(ns.Font, 15, "OUTLINE")
-            t:SetPoint("BOTTOM", f, "TOP", 0, 0)
+            t:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", -2, 0)
             t:SetTextColor(1, 0.82, 0)
-            t:SetText(L["点击角色名字：使面板固定显示"])
+            t:SetText(L["点击角色名：固定并显示背包/银行"])
             mainFrame.tipText = t
 
             -- 装备列表

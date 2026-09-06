@@ -1046,12 +1046,10 @@ GameTooltip:SetCurrencyByID(697)
     -- 获取副本CD
     do
         local colorplayer = SetClassCFF(player, "player")
-        local lastWorldBossText
 
         function ZL.UpdateFBCD()
             local time = GetServerTime()
             local cd = {}
-            local worldBossText = ""
 
             for i = 1, GetNumSavedInstances() do
                 local name, lockoutId, resettime, difficultyId, locked,
@@ -1097,7 +1095,6 @@ GameTooltip:SetCurrencyByID(697)
                             isWorldBoss = true,
                         }
                         tinsert(cd, a)
-                        worldBossText = worldBossText .. bossID
                     end
                 end
             end
@@ -1110,18 +1107,6 @@ GameTooltip:SetCurrencyByID(697)
                         colorplayer = colorplayer,
                     }
                 }
-            end
-
-            if ZL.IsTitan then
-                -- 1，没CD，刚打完BOSS变成有CD
-                -- 2，原本就有CD
-                if worldBossText ~= lastWorldBossText and IsInRaid(1) then
-                    ns.SendMyWorldBossCD()
-                    ZL.After(2, function()
-                        ns.SendMyWorldBossCD()
-                    end)
-                end
-                lastWorldBossText = worldBossText
             end
 
             -- 检查其他角色cd是否到期
@@ -2318,6 +2303,134 @@ GameTooltip:SetCurrencyByID(697)
                         end)
                     end
                 end
+            end)
+        end)
+    end
+
+    -- 背包
+    do
+        ZongLan.bag = ZongLan.bag or {}
+        ZongLan.bag[realmID] = ZongLan.bag[realmID] or {}
+        ZongLan.bag[realmID][player] = ZongLan.bag[realmID][player] or {}
+        ZongLan.bag[realmID][player].bag = ZongLan.bag[realmID][player].bag or {}
+        ZongLan.bag[realmID][player].bagKey = ZongLan.bag[realmID][player].bagKey or {}
+        ZongLan.bag[realmID][player].bank = ZongLan.bag[realmID][player].bank or {}
+        ZongLan.bag[realmID][player].bagLink = ZongLan.bag[realmID][player].bagLink or {}
+        ZongLan.bag[realmID][player].bagKeyLink = ZongLan.bag[realmID][player].bagKeyLink or {}
+        ZongLan.bag[realmID][player].bankLink = ZongLan.bag[realmID][player].bankLink or {}
+
+        local function GetBagSlots(bagType)
+            if bagType == "bag" then
+                if ZL.IsRetail then
+                    return BACKPACK_CONTAINER, NUM_TOTAL_EQUIPPED_BAG_SLOTS
+                else
+                    return BACKPACK_CONTAINER, BACKPACK_CONTAINER + NUM_BAG_SLOTS
+                end
+            elseif bagType == "bank" then
+                if ZL.IsRetail then
+                    return NUM_TOTAL_EQUIPPED_BAG_SLOTS + 1, NUM_TOTAL_EQUIPPED_BAG_SLOTS + NUM_BANKBAGSLOTS
+                else
+                    return NUM_BAG_SLOTS + 1, NUM_BAG_SLOTS + NUM_BANKBAGSLOTS
+                end
+            end
+        end
+
+        local function SaveFromBagNum(bag, bagType)
+            for slot = 1, C_Container.GetContainerNumSlots(bag) do
+                local info = C_Container.GetContainerItemInfo(bag, slot)
+                if info then
+                    ZongLan.bag[realmID][player][bagType][info.itemID] =
+                        (ZongLan.bag[realmID][player][bagType][info.itemID] or 0) + info.stackCount
+                    local link = info.hyperlink
+                    if not link and C_Container.GetContainerItemLink then
+                        link = C_Container.GetContainerItemLink(bag, slot)
+                    end
+                    if link then
+                        local linkType = bagType .. "Link"
+                        local oldInfo = ZongLan.bag[realmID][player][linkType][link]
+                        local oldCount = type(oldInfo) == "table" and oldInfo.count or tonumber(oldInfo) or 0
+                        local maxStack = select(8, GetItemInfo(link))
+                        ZongLan.bag[realmID][player][linkType][link] = {
+                            count = oldCount + info.stackCount,
+                            stackable = (type(oldInfo) == "table" and oldInfo.stackable)
+                                or info.stackCount > 1 or (maxStack and maxStack > 1) or nil,
+                        }
+                    end
+                end
+            end
+        end
+
+        function ZL.SaveBag()
+            wipe(ZongLan.bag[realmID][player].bag)
+            wipe(ZongLan.bag[realmID][player].bagKey)
+            wipe(ZongLan.bag[realmID][player].bagLink)
+            wipe(ZongLan.bag[realmID][player].bagKeyLink)
+            local startBag, endBag = GetBagSlots("bag")
+            for bag = startBag, endBag do
+                SaveFromBagNum(bag, "bag")
+            end
+            SaveFromBagNum(-2, "bagKey")
+        end
+
+        function ZL.SaveBank()
+            if ZL.IsRetail then return end
+            if not ZL.bankIsOpen then return end
+            wipe(ZongLan.bag[realmID][player].bank)
+            wipe(ZongLan.bag[realmID][player].bankLink)
+            local startBag, endBag = GetBagSlots("bank")
+            for bag = startBag, endBag do
+                SaveFromBagNum(bag, "bank")
+            end
+            SaveFromBagNum(-1, "bank")
+        end
+
+        function ZL.GetItemBagCount(tbl, itemID)
+            return (tbl.bag and tbl.bag[itemID] or 0)
+                + (tbl.bagKey and tbl.bagKey[itemID] or 0)
+                + (tbl.bank and tbl.bank[itemID] or 0)
+        end
+
+        ZL.RegisterEvent("BAG_UPDATE_DELAYED", function()
+            ZL.SaveBag()
+            ZL.SaveBank()
+        end)
+        ZL.RegisterEvent("BANKFRAME_OPENED", function()
+            ZL.bankIsOpen = true
+            ZL.SaveBank()
+        end)
+        ZL.RegisterEvent("BANKFRAME_CLOSED", function()
+            ZL.bankIsOpen = false
+        end)
+    end
+
+    -- 声望
+    if not ZL.IsRetail then
+        ZongLan.bag[realmID][player].faction = ZongLan.bag[realmID][player].faction or {}
+
+        local function SaveReputation()
+            for _, factionID in ipairs(ZL.factionTbl) do
+                local name, _, standingID, barMin, barMax, barValue = GetFactionInfoByID(factionID)
+                if name then
+                    ZongLan.bag[realmID][player].faction[factionID] = {
+                        name = name,
+                        standingID = standingID,
+                        currentValue = barValue - barMin,
+                        maxValue = barMax - barMin,
+                        factionID = factionID,
+                    }
+                end
+            end
+        end
+
+        ZL.Init2(function()
+            ZL.After(10, function()
+                SaveReputation()
+            end)
+        end)
+
+        ZL.RegisterEvent("UPDATE_FACTION", function()
+            ZL.After(.5, function()
+                SaveReputation()
             end)
         end)
     end

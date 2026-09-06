@@ -386,6 +386,14 @@ local function SetEquipFrameFuc(bt, isAccounts, realmID, player, colorplayer, le
     end)
     bt:SetScript("OnClick", function(self)
         ZL.ShowEquipFrame(true, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel, nil, nil, nil, showAllServer)
+        local f = ZL.equipFrame
+        if f and f:IsShown() and f.click and f.realmID == realmID and f.player == player then
+            if ZL.ShowBagFrame then
+                ZL.ShowBagFrame(f, isAccounts, realmID, player, colorplayer, class)
+            end
+        elseif ZL.HideBagFrame then
+            ZL.HideBagFrame()
+        end
     end)
 end
 
@@ -1108,6 +1116,11 @@ function ZL.SetFBCD(self, position, click, refresh)
         mainFrame.lastPosition = position
         mainFrame.lastSelf = self
         ZL.FBCDFrame = mainFrame
+        mainFrame:HookScript("OnHide", function()
+            if ZL.HideBagFrame then
+                ZL.HideBagFrame()
+            end
+        end)
         ZL.UpdateFBCDFrameScale()
         ZL.CreateCloseButton(mainFrame, ZL.IsRetail and 0 or 2, ZL.IsRetail and 0 or 2)
         if click then
@@ -1158,7 +1171,6 @@ function ZL.SetFBCD(self, position, click, refresh)
             bt:RegisterForClicks("AnyUp")
             bt:SetScript("OnClick", function(self)
                 ZL.OpenOption()
-                ZL.ButtonOptions_roleOverview:Click()
             end)
 
             if hasAccountDropDown then

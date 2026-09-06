@@ -603,7 +603,9 @@ do
     local function SetValue(optionName, newScale)
         ZongLan.options[optionName] = newScale
         ZL.options["button" .. optionName]:SetValue(newScale)
-        ZL.options["button" .. optionName].edit:SetText(newScale)
+        if ZL.options["button" .. optionName].edit then
+            ZL.options["button" .. optionName].edit:SetText(newScale)
+        end
     end
     function btMixin:OnMouseDown(btn)
         if btn == "LeftButton" then

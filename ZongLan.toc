@@ -7,7 +7,7 @@
 ## Notes-enUS: Multi-character information overview. Commands: /zl or /zonglan
 ## IconTexture: Interface\AddOns\ZongLan\Media\icon\icon.png
 ## Author: 苍穹之霜
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: ZongLan
 
 Locales\Locales.lua
@@ -21,6 +21,7 @@ Libs\EnchantData\Enchant.lua
 function1.lua
 
 EquipViewer.lua
+BagViewer.lua
 Core.lua
 RoleOverview.lua
 Sort.lua
