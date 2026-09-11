@@ -566,6 +566,19 @@ ZL.Init(function()
                 ZL.UpdateFBCDFrameScale()
             end)
         end
+        local roleOverviewPopups = {}
+        local function ToggleRoleOverviewPopup(frame)
+            local shown = not frame:IsShown()
+            if shown then
+                for _, popup in ipairs(roleOverviewPopups) do
+                    if popup ~= frame then
+                        popup:Hide()
+                    end
+                end
+            end
+            frame:SetShown(shown)
+        end
+
         h = h + 30
         -- 背景透明度
         do
@@ -830,7 +843,7 @@ ZL.Init(function()
                 L["显示其他装备部位"],
                 L["在饰品后面增加显示其他装备部位。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture('QUEST') .. L["显示其他装备部位"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
+            local f = O.CreateCheckButton(name, L["显示其他装备部位"], base, 15, -h, ontext, true, { ZL.RefreshFBCDFrame })
 
             local chooseBT = ZL.CreateButton(f)
             chooseBT:SetSize(120, 22)
@@ -852,7 +865,7 @@ ZL.Init(function()
             local chooseFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
             chooseFrame:SetPoint("TOPLEFT", chooseBT, "BOTTOMLEFT", 0, -5)
             chooseFrame:SetSize(230, 195)
-            chooseFrame:SetFrameStrata("DIALOG")
+            chooseFrame:SetFrameStrata("HIGH")
             chooseFrame:SetClampedToScreen(true)
             chooseFrame:SetBackdrop({
                 bgFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -862,7 +875,9 @@ ZL.Init(function()
             })
             chooseFrame:SetBackdropColor(0, 0, 0, .95)
             chooseFrame:SetBackdropBorderColor(.5, .5, .5)
+            chooseFrame:EnableMouse(true)
             chooseFrame:Hide()
+            tinsert(roleOverviewPopups, chooseFrame)
 
             local closeBT = CreateFrame("Button", nil, chooseFrame, "UIPanelCloseButton")
             closeBT:SetPoint("TOPRIGHT", 2, 2)
@@ -898,10 +913,461 @@ ZL.Init(function()
 
             chooseBT:SetScript("OnClick", function()
                 ZL.PlaySound(1)
-                chooseFrame:SetShown(not chooseFrame:IsShown())
+                ToggleRoleOverviewPopup(chooseFrame)
             end)
             chooseBT:HookScript("OnHide", function()
                 chooseFrame:Hide()
+            end)
+        end
+
+        h = h + 30
+        -- 显示自定义物品
+        do
+            local name = "roleOverviewShowCustomItem"
+            ZongLan.options[name] = ZongLan.options[name] or 1
+            local itemListName = "roleOverviewCustomItems"
+            local presetPotionIDs, presetFlaskIDs
+            if ZL.IsVanilla then
+                presetPotionIDs = {
+                    13442, -- 强效怒气药水
+                    13455, -- 强效石盾药水
+                }
+                presetFlaskIDs = {
+                    13510, -- 泰坦合剂
+                    13511, -- 精炼智慧合剂
+                    13512, -- 超级能量合剂
+                    13513, -- 多重抗性合剂
+                }
+            elseif ZL.IsTBC then
+                presetPotionIDs = {
+                    22788, -- 烈焰菇
+                    22828, -- 疯狂力量药水
+                    22837, -- 英雄药水
+                    22838, -- 加速药水
+                    22839, -- 毁灭药水
+                    22849, -- 铁盾药水
+                }
+                presetFlaskIDs = {
+                    22851, -- 强固合剂
+                    22853, -- 强效回复合剂
+                    22854, -- 无情突袭合剂
+                    22861, -- 盲目光芒合剂
+                    22866, -- 纯粹死亡合剂
+                    33208, -- 多彩奇迹合剂
+                }
+            elseif ZL.IsTitan then
+                presetPotionIDs = {
+                    40211, -- 速度药水
+                    40212, -- 狂野魔法药水
+                    40093, -- 不灭药水
+                    20007, -- 狂野魔精药水
+                }
+                presetFlaskIDs = {
+                    46376, -- 冰霜巨龙合剂
+                    46377, -- 无尽怒气合剂
+                    46378, -- 纯净魔精合剂
+                    46379, -- 石血合剂
+                    40079, -- 次级坚韧合剂
+                    44939, -- 次级抗性合剂
+                    13511, -- 精炼智慧合剂
+                }
+            elseif ZL.IsWLK_80 then
+                presetPotionIDs = {
+                    40211, -- 速度药水
+                    40212, -- 狂野魔法药水
+                    40093, -- 不灭药水
+                }
+                presetFlaskIDs = {
+                    46376, -- 冰霜巨龙合剂
+                    46377, -- 无尽怒气合剂
+                    46378, -- 纯净魔精合剂
+                    46379, -- 石血合剂
+                    40079, -- 次级坚韧合剂
+                    44939, -- 次级抗性合剂
+                    13511, -- 精炼智慧合剂
+                }
+            elseif ZL.IsCTM then
+                presetPotionIDs = {
+                    58146, -- 魔像之血药水
+                    58145, -- 托维尔药水
+                    58091, -- 火山药水
+                    58090, -- 土灵药水
+                }
+                presetFlaskIDs = {
+                    58088, -- 泰坦之力合剂
+                    58087, -- 风行合剂
+                    58086, -- 龙智合剂
+                    58085, -- 钢皮合剂
+                    67438, -- 流水合剂
+                }
+            elseif ZL.IsMOP then
+                presetPotionIDs = {
+                    76095, -- 魔古之力药水
+                    76089, -- 春华药水
+                    76093, -- 青龙药水
+                    76090, -- 高山药水
+                }
+                presetFlaskIDs = {
+                    76088, -- 冬噬合剂
+                    76084, -- 春华合剂
+                    76085, -- 暖阳合剂
+                    76086, -- 秋叶合剂
+                    76087, -- 大地合剂
+                }
+            elseif ZL.IsRetail then
+                presetPotionIDs = {
+                    241308, 241309, -- 光明潜能
+                    241296, 241297, -- 狂热药水
+                    241288, 241289, -- 鲁莽药水
+                    241292, 241293, -- 狂放饮剂
+                    271886, 271887, -- 流光药剂
+                    271889, 271890, -- 诱惑秘药
+                }
+                presetFlaskIDs = {
+                    241320, 241321, -- 萨拉斯抗性合剂
+                    241322, 241323, -- 魔导师合剂
+                    241324, 241325, -- 血骑士合剂
+                    241326, 241327, -- 破碎残阳合剂
+                }
+            end
+            presetPotionIDs = presetPotionIDs or {}
+            presetFlaskIDs = presetFlaskIDs or {}
+            if type(ZongLan.options[itemListName]) ~= "table" then
+                ZongLan.options[itemListName] = {}
+                local oldItemID = tonumber(ZongLan.options.roleOverviewCustomItemID)
+                local oldItemLink = ZongLan.options.roleOverviewCustomItemLink
+                if oldItemID and oldItemLink then
+                    tinsert(ZongLan.options[itemListName], {
+                        id = oldItemID,
+                        link = oldItemLink,
+                    })
+                end
+            end
+            local defaultItemsName = "roleOverviewDefaultCustomItemsAdded"
+            if not ZongLan.options[defaultItemsName] then
+                local existing = {}
+                for _, info in ipairs(ZongLan.options[itemListName]) do
+                    if info.id then
+                        existing[info.id] = true
+                    end
+                end
+                local function AddDefaultItem(itemID)
+                    if existing[itemID] then return end
+                    existing[itemID] = true
+                    local info = {
+                        id = itemID,
+                        link = select(2, GetItemInfo(itemID)),
+                    }
+                    tinsert(ZongLan.options[itemListName], info)
+                    Item:CreateFromItemID(itemID):ContinueOnItemLoad(function()
+                        info.link = select(2, GetItemInfo(itemID))
+                    end)
+                end
+                for _, itemID in ipairs(presetPotionIDs) do
+                    AddDefaultItem(itemID)
+                end
+                for _, itemID in ipairs(presetFlaskIDs) do
+                    AddDefaultItem(itemID)
+                end
+                ZongLan.options[defaultItemsName] = true
+            end
+            local ontext = {
+                L["显示自定义物品"],
+                L["在角色总览中显示自定义物品。"],
+            }
+            local function RefreshCustomItems()
+                if ZL.MONEYupdate then
+                    ZL.MONEYupdate()
+                end
+                ZL.RefreshFBCDFrame()
+            end
+            local f = O.CreateCheckButton(name, AddTexture('QUEST')..L["显示自定义物品"], base, 15, -h, ontext, true, { RefreshCustomItems })
+
+            local itemBT = ZL.CreateButton(f)
+            itemBT:SetSize(120, 22)
+            itemBT:SetPoint("LEFT", f.Text, "RIGHT", 10, 0)
+            SetParent(itemBT, name)
+
+            local itemFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+            itemFrame:SetPoint("TOPLEFT", itemBT, "BOTTOMLEFT", 0, -5)
+            itemFrame:SetSize(280, 300)
+            itemFrame:SetFrameStrata("HIGH")
+            itemFrame:SetClampedToScreen(true)
+            itemFrame:SetBackdrop({
+                bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+                edgeSize = 16,
+                insets = { left = 3, right = 3, top = 3, bottom = 3 },
+            })
+            itemFrame:SetBackdropColor(0, 0, 0, .95)
+            itemFrame:SetBackdropBorderColor(.5, .5, .5)
+            itemFrame:EnableMouse(true)
+            itemFrame:Hide()
+            tinsert(roleOverviewPopups, itemFrame)
+
+            local closeBT = CreateFrame("Button", nil, itemFrame, "UIPanelCloseButton")
+            closeBT:SetPoint("TOPRIGHT", 2, 2)
+
+            local title = itemFrame:CreateFontString()
+            title:SetFont(ns.Font, 15, "OUTLINE")
+            title:SetPoint("TOP", 0, -9)
+            title:SetText(L["自定义物品"])
+            title:SetTextColor(1, 1, 1)
+
+            local idText = itemFrame:CreateFontString()
+            idText:SetFont(ns.Font, 15, "OUTLINE")
+            idText:SetPoint("TOPLEFT", 15, -40)
+            idText:SetText(L["物品ID："])
+            idText:SetTextColor(1, 1, 1)
+
+            local edit = CreateFrame("EditBox", nil, itemFrame, ZL.editTemplate)
+            edit:SetSize(100, 20)
+            edit:SetPoint("LEFT", idText, "RIGHT", 10, 0)
+            edit:SetText("")
+            edit:SetAutoFocus(false)
+            edit:SetNumeric(true)
+            ZL.SetEditBaseClass(edit)
+
+            local addBT = ZL.CreateButton(itemFrame)
+            addBT:SetSize(60, 22)
+            addBT:SetPoint("LEFT", edit, "RIGHT", 10, 0)
+            addBT:SetText(L["添加"])
+
+            local listFrame, listChild = ZL.CreateScrollFrame(itemFrame, itemFrame:GetWidth() - 20, itemFrame:GetHeight() - 110)
+            listFrame:SetBackdrop({
+                bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeSize = 1,
+            })
+            listFrame:SetPoint("TOPLEFT", 10, -70)
+            listFrame:SetBackdropColor(0, 0, 0, .35)
+            listFrame:SetBackdropBorderColor(.5, .5, .5)
+
+            local presetPotionBT = ZL.CreateButton(itemFrame)
+            presetPotionBT:SetSize(120, 22)
+            presetPotionBT:SetPoint("TOPLEFT", listFrame, "BOTTOMLEFT", 0, -8)
+            presetPotionBT:SetText(L["添加爆发药水"])
+
+            local presetFlaskBT = ZL.CreateButton(itemFrame)
+            presetFlaskBT:SetSize(120, 22)
+            presetFlaskBT:SetPoint("TOPRIGHT", listFrame, "BOTTOMRIGHT", 0, -8)
+            presetFlaskBT:SetText(L["添加合剂"])
+
+            local function ShowPresetTooltip(self, presetIDs)
+                GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
+                GameTooltip:AddLine(' ', 1, 1, 1, true)
+                for _, itemID in ipairs(presetIDs) do
+                    local itemLink = select(2, GetItemInfo(itemID))
+                    local tex=select(5, GetItemInfoInstant(itemID))
+                    GameTooltip:AddLine(AddTexture(tex)..(itemLink or format("%s%d", L["物品ID："], itemID)), 1, .82, 0, true)
+                end
+                GameTooltip:Show()
+            end
+            presetPotionBT:SetScript("OnEnter", function(self)
+                ShowPresetTooltip(self, presetPotionIDs)
+            end)
+            presetFlaskBT:SetScript("OnEnter", function(self)
+                ShowPresetTooltip(self, presetFlaskIDs)
+            end)
+            presetPotionBT:SetScript("OnLeave", GameTooltip_Hide)
+            presetFlaskBT:SetScript("OnLeave", GameTooltip_Hide)
+
+            local loadID = 0
+            local function SetAddButtonsEnabled(enabled)
+                if enabled then
+                    addBT:Enable()
+                    presetPotionBT:Enable()
+                    presetFlaskBT:Enable()
+                else
+                    addBT:Disable()
+                    presetPotionBT:Disable()
+                    presetFlaskBT:Disable()
+                end
+            end
+            local rows = {}
+            local emptyText = listChild:CreateFontString()
+            emptyText:SetFont(ns.Font, 15, "OUTLINE")
+            emptyText:SetPoint("TOPLEFT", 5, -5)
+            emptyText:SetText(L["尚未添加物品。"])
+            emptyText:SetTextColor(.5, .5, .5)
+
+            local function UpdateItemList()
+                local items = ZongLan.options[itemListName]
+                table.sort(items, function(a, b)
+                    return (a.id or 0) < (b.id or 0)
+                end)
+                for _, row in ipairs(rows) do
+                    row.linkBT:Hide()
+                    row.deleteBT:Hide()
+                end
+
+                for i, info in ipairs(items) do
+                    local row = rows[i]
+                    if not row then
+                        row = {}
+                        rows[i] = row
+
+                        row.linkBT = CreateFrame("Button", nil, listChild)
+                        row.linkBT:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
+                        local linkText = row.linkBT:CreateFontString()
+                        linkText:SetFont(ns.Font, 15, "OUTLINE")
+                        linkText:SetPoint("LEFT")
+                        linkText:SetPoint("RIGHT")
+                        linkText:SetJustifyH("LEFT")
+                        linkText:SetWordWrap(false)
+                        row.linkBT:SetFontString(linkText)
+                        row.linkBT:SetScript("OnEnter", function(self)
+                            if not self.link then return end
+                            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                            GameTooltip:SetHyperlink(self.link)
+                            GameTooltip:Show()
+                        end)
+                        row.linkBT:SetScript("OnLeave", GameTooltip_Hide)
+
+                        row.deleteBT = ZL.CreateButton(listChild)
+                        row.deleteBT:SetSize(50, 20)
+                        row.deleteBT:SetText(L["删除"])
+                        row.deleteBT:SetScript("OnClick", function(self)
+                            ZL.PlaySound(1)
+                            tremove(ZongLan.options[itemListName], self.index)
+                            UpdateItemList()
+                            RefreshCustomItems()
+                        end)
+                    end
+
+                    row.linkBT:ClearAllPoints()
+                    row.linkBT:SetPoint("TOPLEFT", 5, -(i - 1) * 24)
+                    row.linkBT:SetSize(listChild:GetWidth() - 60, 22)
+                    local texture = select(5, GetItemInfoInstant(info.id))
+                    row.linkBT:SetText(AddTexture(texture) .. (info.link or info.id))
+                    row.linkBT.link = info.link
+                    row.linkBT:Show()
+
+                    row.deleteBT:ClearAllPoints()
+                    row.deleteBT:SetPoint("LEFT", row.linkBT, "RIGHT", 5, 0)
+                    row.deleteBT.index = i
+                    row.deleteBT:Show()
+                end
+
+                local count = #items
+                local color = count == 0 and "808080" or "00ff00"
+                itemBT:SetText(format("%s(|cff%s%d|r)", L["设置物品"], color, count))
+                emptyText:SetShown(count == 0)
+                listChild:SetHeight(max(listFrame.scroll:GetHeight(), count * 24))
+            end
+            UpdateItemList()
+
+            local function AddPresetItems(presetIDs)
+                local existing = {}
+                for _, info in ipairs(ZongLan.options[itemListName]) do
+                    existing[info.id] = true
+                end
+
+                local itemIDs = {}
+                for _, itemID in ipairs(presetIDs) do
+                    if not existing[itemID] and GetItemInfoInstant(itemID) then
+                        existing[itemID] = true
+                        tinsert(itemIDs, itemID)
+                    end
+                end
+                if #itemIDs == 0 then
+                    return
+                end
+
+                loadID = loadID + 1
+                local expectedLoadID = loadID
+                local pending = #itemIDs
+                local added = 0
+                SetAddButtonsEnabled(false)
+
+                for _, itemID in ipairs(itemIDs) do
+                    Item:CreateFromItemID(itemID):ContinueOnItemLoad(function()
+                        if expectedLoadID ~= loadID then return end
+                        local _, link = GetItemInfo(itemID)
+                        if link then
+                            tinsert(ZongLan.options[itemListName], {
+                                id = itemID,
+                                link = link,
+                            })
+                            added = added + 1
+                        end
+                        pending = pending - 1
+                        if pending == 0 then
+                            SetAddButtonsEnabled(true)
+                            UpdateItemList()
+                            RefreshCustomItems()
+                        end
+                    end)
+                end
+            end
+
+            local function AddItem()
+                local itemID = tonumber(edit:GetText())
+                if not itemID or itemID <= 0 or itemID ~= floor(itemID) or not GetItemInfoInstant(itemID) then
+                    return
+                end
+
+                for _, info in ipairs(ZongLan.options[itemListName]) do
+                    if info.id == itemID then
+                        return
+                    end
+                end
+
+                loadID = loadID + 1
+                local expectedLoadID = loadID
+                SetAddButtonsEnabled(false)
+                Item:CreateFromItemID(itemID):ContinueOnItemLoad(function()
+                    if expectedLoadID ~= loadID then return end
+                    SetAddButtonsEnabled(true)
+                    local _, link = GetItemInfo(itemID)
+                    if not link then
+                        return
+                    end
+                    tinsert(ZongLan.options[itemListName], {
+                        id = itemID,
+                        link = link,
+                    })
+                    edit:SetText("")
+                    edit:ClearFocus()
+                    UpdateItemList()
+                    RefreshCustomItems()
+                end)
+            end
+
+            addBT:SetScript("OnClick", function()
+                ZL.PlaySound(1)
+                AddItem()
+            end)
+            presetPotionBT:SetScript("OnClick", function()
+                ZL.PlaySound(1)
+                AddPresetItems(presetPotionIDs)
+            end)
+            presetFlaskBT:SetScript("OnClick", function()
+                ZL.PlaySound(1)
+                AddPresetItems(presetFlaskIDs)
+            end)
+            edit:SetScript("OnEnterPressed", AddItem)
+            edit:SetScript("OnEscapePressed", function(self)
+                self:ClearFocus()
+                itemFrame:Hide()
+            end)
+            itemBT:SetScript("OnClick", function()
+                ZL.PlaySound(1)
+                ToggleRoleOverviewPopup(itemFrame)
+                if itemFrame:IsShown() then
+                    edit:SetText("")
+                    UpdateItemList()
+                    edit:SetFocus()
+                end
+            end)
+            itemFrame:SetScript("OnHide", function()
+                loadID = loadID + 1
+                SetAddButtonsEnabled(true)
+            end)
+            itemBT:HookScript("OnHide", function()
+                itemFrame:Hide()
             end)
         end
 

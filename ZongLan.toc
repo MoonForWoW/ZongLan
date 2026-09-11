@@ -7,7 +7,7 @@
 ## Notes-enUS: Multi-character information overview. Commands: /zl or /zonglan
 ## IconTexture: Interface\AddOns\ZongLan\Media\icon\icon.png
 ## Author: 苍穹之霜
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: ZongLan
 
 Locales\Locales.lua

@@ -175,6 +175,9 @@ ZL.Init(function()
             self.realmID = nil
             self.player = nil
             self.click = nil
+            if ZL.HideBagFrame then
+                ZL.HideBagFrame()
+            end
             self:Hide()
         end)
 
@@ -198,11 +201,45 @@ ZL.Init(function()
                 mainFrame.CloseButton = CreateFrame("Button", nil, mainFrame, "UIPanelCloseButton")
                 mainFrame.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 2, 2)
 
-                local tex = f:CreateTexture()
-                tex:SetPoint("TOPLEFT", 8, -6)
-                tex:SetSize(16, 16)
-                tex:SetTexture(ns.Interface .. "Media\\icon\\icon.png")
-                tex:SetTexCoord(.1, .9, .1, .9)
+                local function CreateViewerButton(texture, tooltip, toggleFunc)
+                    local button = CreateFrame("CheckButton", nil, f, "BackdropTemplate")
+                    button:SetSize(20, 20)
+                    button:SetBackdrop({ edgeFile = "Interface/ChatFrame/ChatFrameBackground", edgeSize = 1 })
+                    button:SetBackdropBorderColor(.5, .5, .5, 1)
+                    button:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
+                    local checkedTexture = button:CreateTexture(nil, "OVERLAY")
+                    checkedTexture:SetPoint("CENTER")
+                    checkedTexture:SetSize(35, 35)
+                    checkedTexture:SetTexture("Interface/Buttons/UI-ActionButton-Border")
+                    checkedTexture:SetBlendMode("ADD")
+                    checkedTexture:SetVertexColor(1, .82, 0, .8)
+                    button:SetCheckedTexture(checkedTexture)
+                    button.icon = button:CreateTexture(nil, "ARTWORK")
+                    button.icon:SetAllPoints()
+                    button.icon:SetTexture(texture)
+                    button.icon:SetTexCoord(unpack(ZL.iconTexCoord))
+                    button:SetScript("OnEnter", function(self)
+                        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+                        GameTooltip:SetText(tooltip)
+                        GameTooltip:Show()
+                    end)
+                    button:SetScript("OnLeave", GameTooltip_Hide)
+                    button:SetScript("OnClick", function()
+                        if mainFrame.click and mainFrame.realmID and mainFrame.player and toggleFunc then
+                            toggleFunc(mainFrame, mainFrame.isAccounts, mainFrame.realmID, mainFrame.player,
+                                mainFrame.colorplayer, mainFrame.class)
+                        end
+                    end)
+                    button:Hide()
+                    return button
+                end
+
+                mainFrame.BagButton = CreateViewerButton("Interface\\Icons\\INV_Misc_Bag_08",
+                    BAGSLOT or INVENTORY_TOOLTIP or "Bags", ZL.ToggleBagFrame)
+                mainFrame.BagButton:SetPoint("TOPLEFT", 7, -4)
+                mainFrame.BankButton = CreateViewerButton("Interface\\Icons\\inv_misc_bag_14",
+                    BANK or "Bank", ZL.ToggleBankFrame)
+                mainFrame.BankButton:SetPoint("LEFT", mainFrame.BagButton, "RIGHT", 3, 0)
 
                 local l = leftFrame:CreateLine()
                 l:SetColorTexture(r, g, b, 1)
@@ -766,10 +803,15 @@ ZL.Init(function()
         mainFrame.time = GetTime()
         mainFrame.realmID = realmID
         mainFrame.player = player
+        mainFrame.isAccounts = isAccounts
+        mainFrame.colorplayer = colorplayer
+        mainFrame.class = class
         mainFrame.click = click
         mainFrame.equipLoadID = (mainFrame.equipLoadID or 0) + 1
         local equipLoadID = mainFrame.equipLoadID
         mainFrame.CloseButton:SetShown(click)
+        mainFrame.BagButton:SetShown(click and not BiaoGeAIdb)
+        mainFrame.BankButton:SetShown(click and not BiaoGeAIdb)
         mainFrame:Show()
         mainFrame:SetParent(bt)
         mainFrame:SetFrameLevel(bt:GetFrameLevel() + 10)
@@ -919,5 +961,10 @@ ZL.Init(function()
         end
 
         UpdateEquipFrameWidth()
+        if click and not BiaoGeAIdb and ZL.RestoreBagViewerFrames then
+            ZL.RestoreBagViewerFrames(mainFrame, isAccounts, realmID, player, colorplayer, class)
+        elseif ZL.HideBagFrame then
+            ZL.HideBagFrame()
+        end
     end
 end)

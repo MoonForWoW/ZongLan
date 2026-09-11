@@ -280,6 +280,40 @@ local function CreateItem(t_paizi, i, v, isNewUI)
         f:SetScript("OnLeave", OnLeave)
     end)
 end
+local function GetCustomItems(realmID, player, isAccounts, configuredItems)
+    local items = {}
+    local playerBag
+    if ZL.IsMe(realmID, player) and not isAccounts then
+        for _, info in ipairs(configuredItems) do
+            local itemID = tonumber(info.id)
+            local count = itemID and GetItemCount(itemID, true)
+            if count and count > 0 then
+                tinsert(items, {
+                    id = itemID,
+                    count = count,
+                })
+            end
+        end
+        return items
+    end
+
+    local db = isAccounts and ZongLanDB or ZongLan
+    playerBag = db and db.bag and db.bag[realmID] and db.bag[realmID][player]
+    if not playerBag or not ZL.GetItemBagCount then
+        return nil
+    end
+    for _, info in ipairs(configuredItems) do
+        local itemID = tonumber(info.id)
+        local count = itemID and ZL.GetItemBagCount(playerBag, itemID)
+        if count and count > 0 then
+            tinsert(items, {
+                id = itemID,
+                count = count,
+            })
+        end
+    end
+    return items
+end
 local trinketSlots = { "13", "14" }
 local weaponSlots = { "16", "17" }
 local hunterWeaponSlots = { "16", "17", "18" }
@@ -386,14 +420,6 @@ local function SetEquipFrameFuc(bt, isAccounts, realmID, player, colorplayer, le
     end)
     bt:SetScript("OnClick", function(self)
         ZL.ShowEquipFrame(true, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel, nil, nil, nil, showAllServer)
-        local f = ZL.equipFrame
-        if f and f:IsShown() and f.click and f.realmID == realmID and f.player == player then
-            if ZL.ShowBagFrame then
-                ZL.ShowBagFrame(f, isAccounts, realmID, player, colorplayer, class)
-            end
-        elseif ZL.HideBagFrame then
-            ZL.HideBagFrame()
-        end
     end)
 end
 
@@ -886,18 +912,21 @@ local function CreateMoneyTitle(mainFrame, MONEYchoice_table, n, isNewUI, FBCDwi
     return n
 end
 
-local function AddUseTips(t)
+local function AddUseTips(mainFrame)
     local accountsText = ""
     if ZongLanDB then
         accountsText = L["，长按ALT仅显示本账号角色"]
     end
     local tipsText
     if ZongLan.options.roleOverviewDefaultShow == "one" then
-        tipsText = L["|cff808080（鼠标中键固定显示，长按SHIFT显示全服务器角色%s）|r"]
+        tipsText = L["|cff808080左键固定显示，长按SHIFT显示全服务器角色%s|r"]
     else
-        tipsText = L["|cff808080（鼠标中键固定显示，长按SHIFT显示当前服务器角色%s）|r"]
+        tipsText = L["|cff808080左键固定显示，长按SHIFT显示当前服务器角色%s|r"]
     end
-    t:SetText(t:GetText() .. format(tipsText, accountsText))
+    local t = mainFrame:CreateFontString()
+    t:SetPoint('TOP', mainFrame, 'BOTTOM', 0, -0)
+    t:SetFont(ns.Font, 13, "OUTLINE")
+    t:SetText(tipsText:format(accountsText))
 end
 
 local function IsFrameOutsideScreen(frame)
@@ -984,6 +1013,9 @@ function ZL.SetFBCD(self, position, click, refresh)
     local showAllServer = ZL.RoleOverviewShowAllServer()
     local showAccountName = (not click or refresh) and IsControlKeyDown()
     local isNewUI = ZongLan.options.roleOverviewLayout == "new"
+    local customItems = ZongLan.options.roleOverviewCustomItems
+    local showCustomItems = ZongLan.options.roleOverviewShowCustomItem == 1
+        and type(customItems) == "table" and #customItems > 0
     isNewUI_PlayerNameWidth = 90
     if isNewUI and ZongLan.options.roleOverviewShowOtherEquip == 1 then
         local count = #GetOtherEquipSlots()
@@ -1085,6 +1117,15 @@ function ZL.SetFBCD(self, position, click, refresh)
         end
         tinsert(MONEYchoice_table, insertIndex, ZL.RoleOverviewOtherEquipInfo)
     end
+    if showCustomItems then
+        local insertIndex = 1
+        for i, info in ipairs(MONEYchoice_table) do
+            if info.id == "trinkets" or info.id == "otherEquips" then
+                insertIndex = i + 1
+            end
+        end
+        tinsert(MONEYchoice_table, insertIndex, ZL.RoleOverviewCustomItemsInfo)
+    end
     if not isNewUI then
         tinsert(MONEYchoice_table, 1, {
             name = L["角色"] .. " " .. ZL.STC_dis("(" .. LEVEL .. ")"),
@@ -1097,7 +1138,7 @@ function ZL.SetFBCD(self, position, click, refresh)
 
     local Moneywidth
 
-    local n = hasAccountDropDown and 2 or 1
+    local n = 1
     local totalwidth
     local FBCDwidth = 0
     -- 创建主框体
@@ -1112,7 +1153,7 @@ function ZL.SetFBCD(self, position, click, refresh)
         mainFrame:SetBackdropColor(0, 0, 0, ZongLan.options.roleOverviewAlpha or 0.9)
         mainFrame:SetBackdropBorderColor(r, g, b)
         mainFrame:SetFrameLevel(100)
-        mainFrame:SetSize(300, 100)
+        mainFrame:SetSize(400, 100)
         mainFrame.lastPosition = position
         mainFrame.lastSelf = self
         ZL.FBCDFrame = mainFrame
@@ -1152,12 +1193,14 @@ function ZL.SetFBCD(self, position, click, refresh)
                 self:StartMoving()
             end)
 
+            local lastbt
             local bt = CreateFrame("Button", nil, mainFrame)
             bt:SetSize(18, 18)
             bt:SetNormalTexture(851904)
             bt:SetHighlightTexture(851904)
             bt:SetPoint("TOPRIGHT", -30, -5)
             bt:RegisterForClicks("AnyUp")
+            lastbt=bt
             bt:SetScript("OnClick", function(self)
                 ZL.PlaySound(1)
                 ZL.SetFBCD(nil, nil, true, true)
@@ -1167,16 +1210,36 @@ function ZL.SetFBCD(self, position, click, refresh)
             bt:SetSize(18, 18)
             bt:SetNormalTexture([[Interface\Buttons\UI-OptionsButton]])
             bt:SetHighlightTexture([[Interface\Buttons\UI-OptionsButton]])
-            bt:SetPoint("TOPRIGHT", -52, -5)
+            bt:SetPoint("RIGHT", lastbt, "LEFT", -5, 0)
             bt:RegisterForClicks("AnyUp")
+            lastbt = bt
             bt:SetScript("OnClick", function(self)
                 ZL.OpenOption()
             end)
 
+            local bt = CreateFrame("Button", nil, mainFrame)
+            bt:SetSize(18, 18)
+            bt:SetNormalTexture([[Interface\Buttons\UI-GuildButton-PublicNote-Up]])
+            bt:SetHighlightTexture([[Interface\Buttons\UI-GuildButton-PublicNote-Up]])
+            bt:SetPoint("RIGHT", lastbt, "LEFT", -5, 0)
+            bt:RegisterForClicks("AnyUp")
+            lastbt = bt
+            bt:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -5)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(L["更新日志"], 1, 1, 1, true)
+                GameTooltip:AddLine(' ')
+                for i, t in ipairs(ns.updateText_before) do
+                    GameTooltip:AddLine(t, 1, 0.82, 0)
+                end
+                GameTooltip:Show()
+            end)
+            bt:SetScript("OnLeave", GameTooltip_Hide)
+
             if hasAccountDropDown then
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, mainFrame)
                 dropDown:SetScale(.85)
-                dropDown:SetPoint("TOPRIGHT", mainFrame, "TOPRIGHT", -80, -4)
+                dropDown:SetPoint("RIGHT", lastbt, "LEFT", 0, -4)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
                 LibBG:UIDropDownMenu_SetText(dropDown, accountFilter or L["全部子账号"])
@@ -1231,6 +1294,8 @@ function ZL.SetFBCD(self, position, click, refresh)
             else
                 mainFrame:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT", 0, 0)
             end
+
+            AddUseTips(mainFrame)
         end
     end
     CheckBiaoGeAccounts(mainFrame)
@@ -1239,6 +1304,28 @@ function ZL.SetFBCD(self, position, click, refresh)
     DB = ZL.SortRoleOverview(DB)
     local DB2, DB2sum = GetMoneydb(showAllServer, MONEYchoice_table, accountFilter)
     DB2 = ZL.SortRoleOverview(DB2)
+
+    if showCustomItems then
+        for _, playerInfo in ipairs(DB2) do
+            playerInfo.tbl.customItems = GetCustomItems(
+                playerInfo.realmID,
+                playerInfo.player,
+                playerInfo.isAccounts,
+                customItems
+            )
+        end
+    end
+
+    if isNewUI and showCustomItems then
+        local maxItemCount = 0
+        for _, playerInfo in ipairs(DB2) do
+            local items = playerInfo.tbl.customItems
+            if type(items) == "table" then
+                maxItemCount = max(maxItemCount, #items)
+            end
+        end
+        isNewUI_PlayerNameWidth = max(isNewUI_PlayerNameWidth, (itemWidth + 1) * maxItemCount + 15)
+    end
 
     -- 根据当前显示角色的最大物品数量调整物品列宽
     for _, info in ipairs(MONEYchoice_table) do
@@ -1274,58 +1361,52 @@ function ZL.SetFBCD(self, position, click, refresh)
         MONEYchoice_table[1].name = format(L["%d个"], #DB2) .. MONEYchoice_table[1].name
     end
 
-
     local professionCDStrWidth = professionCDIndex and GetProCDMaxWidth() or 0
 
     --------- 角色团本完成总览 ---------
-    local FBCDTitle
     do
         local t = mainFrame:CreateFontString()
         t:SetFont(ns.Font, fontsize2, "OUTLINE")
         t:SetPoint("TOPLEFT", 15, -10 - (n - 1) * height)
-        t:SetText(ZL.STC_g1(isNewUI and L["< 角色总览 >"] or L["< 角色团本完成总览 >"]))
+        t:SetText(L["<ZongLan> 角色总览 |cffFFFFFF%s|r"]:format(ZL.ver))
+        t:SetTextColor(0,1,0)
         t:SetJustifyH("LEFT")
-        t:SetWordWrap(false)
-        FBCDTitle = t
-        if not click and isNewUI then
-            AddUseTips(t, click, isNewUI)
-        end
         n = n + 1
         -- 设置重置时间
-        local text3 = ""
-        local text7 = ""
-        local function IsSmallRaid(FBID)
-            if ZL.IsTitan then return end
-            -- ZUG ZA AQL 黑暗深渊 诺莫瑞根 风暴悬崖 腐烂之痕 水晶谷
-            local tbl = { 309, 568, 509, 48, 90, 2791, 2789, 2804 }
-            if ZL.IsVanilla_Sod then
-                tinsert(tbl, 249) -- 奥妮克希亚
-            end
-            for i, _FBID in ipairs(tbl) do
-                if FBID == _FBID then
-                    return true
-                end
-            end
-        end
-        for p, v in pairs(ZongLan[FBCD][realmID]) do
-            for i, cd in pairs(ZongLan[FBCD][realmID][p]) do
-                if cd.resettime then
-                    if IsSmallRaid(cd.fbId) then
-                        text3 = format(L["小团本%s"], SecondsToTime(cd.resettime, true, nil, 2))
-                    elseif cd.num ~= 5 then
-                        text7 = SecondsToTime(cd.resettime, true, nil, 2)
-                    end
-                end
-            end
-        end
-        if text3 ~= "" or text7 ~= "" then
-            local douhao = ""
-            if text3 ~= "" and text7 ~= "" then
-                douhao = ", "
-            end
-            local resettext = format("|cff808080" .. L["（团本重置时间：%s）"] .. RR, text7 .. douhao .. text3)
-            t:SetText(t:GetText() .. resettext)
-        end
+        -- local text3 = ""
+        -- local text7 = ""
+        -- local function IsSmallRaid(FBID)
+        --     if ZL.IsTitan then return end
+        --     -- ZUG ZA AQL 黑暗深渊 诺莫瑞根 风暴悬崖 腐烂之痕 水晶谷
+        --     local tbl = { 309, 568, 509, 48, 90, 2791, 2789, 2804 }
+        --     if ZL.IsVanilla_Sod then
+        --         tinsert(tbl, 249) -- 奥妮克希亚
+        --     end
+        --     for i, _FBID in ipairs(tbl) do
+        --         if FBID == _FBID then
+        --             return true
+        --         end
+        --     end
+        -- end
+        -- for p, v in pairs(ZongLan[FBCD][realmID]) do
+        --     for i, cd in pairs(ZongLan[FBCD][realmID][p]) do
+        --         if cd.resettime then
+        --             if IsSmallRaid(cd.fbId) then
+        --                 text3 = format(L["小团本%s"], SecondsToTime(cd.resettime, true, nil, 2))
+        --             elseif cd.num ~= 5 then
+        --                 text7 = SecondsToTime(cd.resettime, true, nil, 2)
+        --             end
+        --         end
+        --     end
+        -- end
+        -- if text3 ~= "" or text7 ~= "" then
+        --     local douhao = ""
+        --     if text3 ~= "" and text7 ~= "" then
+        --         douhao = ", "
+        --     end
+        --     local resettext = format("|cff808080" .. L["（团本重置时间：%s）"] .. RR, text7 .. douhao .. text3)
+        --     t:SetText(t:GetText() .. resettext)
+        -- end
     end
     -- FB标题
     local text_table = {}
@@ -1343,11 +1424,6 @@ function ZL.SetFBCD(self, position, click, refresh)
                 totalwidth = Moneywidth
             end
             AddLine(mainFrame, -6 - height * n)
-        end
-        if ZongLan.options.roleOverviewLayout == "left_right" then
-            FBCDTitle:SetWidth(FBCDwidth - 20)  -- 标题设置宽度
-        else
-            FBCDTitle:SetWidth(totalwidth - 20) -- 标题设置宽度
         end
     end
 
@@ -1648,29 +1724,11 @@ function ZL.SetFBCD(self, position, click, refresh)
     local allWidth = totalwidth
     if not isNewUI then
         if ZongLan.options.roleOverviewLayout == "left_right" then
-            n = hasAccountDropDown and 0 or -1
+            n = 1
             allWidth = FBCDwidth + Moneywidth - 15
         end
         n = n + 1
 
-        local t = mainFrame:CreateFontString()
-        t:SetFont(ns.Font, fontsize2, "OUTLINE")
-        t:SetText(ZL.STC_g1(L["< 角色货币总览 >"]))
-        t:SetJustifyH("LEFT")
-        t:SetWordWrap(false)
-        if ZongLan.options.roleOverviewLayout == "left_right" then
-            t:SetPoint("TOPLEFT", FBCDwidth, -10 - (hasAccountDropDown and height or 0))
-            t:SetWidth(Moneywidth - 20) -- 标题设置宽度
-        else
-            t:SetPoint("TOPLEFT", leftOffset, -10 - height * n)
-            t:SetWidth(totalwidth - 20) -- 标题设置宽度
-        end
-
-        if not click then
-            AddUseTips(t, click, isNewUI)
-        end
-
-        n = n + 2
         -- 货币标题
         n = CreateMoneyTitle(mainFrame, MONEYchoice_table, n, isNewUI, FBCDwidth)
         n = n + 1
@@ -1931,9 +1989,7 @@ function ZL.SetFBCD(self, position, click, refresh)
     if isNewUI then
         n = n + 3
     end
-    if hasAccountDropDown then
-        allWidth = max(allWidth, 380)
-    end
+    allWidth = max(allWidth, hasAccountDropDown and 450 or 300)
     mainFrame:SetSize(allWidth, 10 + height * n + 5)
     if click and IsFrameOutsideScreen(mainFrame) then
         mainFrame:ClearAllPoints()

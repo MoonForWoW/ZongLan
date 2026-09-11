@@ -293,6 +293,12 @@ ZL.Init(function()
     if not ZongLan.options then
         ZongLan.options = {}
     end
+    if ZongLan.options.bagViewerShowBag == nil then
+        ZongLan.options.bagViewerShowBag = true
+    end
+    if ZongLan.options.bagViewerShowBank == nil then
+        ZongLan.options.bagViewerShowBank = true
+    end
     
     if not ZongLan.options.SearchHistory then
         ZongLan.options.SearchHistory = {}

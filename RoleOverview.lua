@@ -57,6 +57,16 @@ ZL.RoleOverviewOtherEquipInfo = {
     width = 55,
 }
 
+ZL.RoleOverviewCustomItemsInfo = {
+    name = L["物品"],
+    color = "FFFF00",
+    type = "items",
+    id = "customItems",
+    tex = 134842,
+    minWidth = 55,
+    width = 55,
+}
+
 ZL.Init(function()
     ZongLan[FBCD] = ZongLan[FBCD] or {}
     ZongLan[FBCD][realmID] = ZongLan[FBCD][realmID] or {}
@@ -201,7 +211,6 @@ ZL.Init(function()
         elseif ZL.IsTitan then
             ZongLan.MONEYchoice[3403] = 1
             ZongLan.MONEYchoice[3406] = 1
-            ZongLan.MONEYchoice[161] = 1
             ZongLan.MONEYchoice[1901] = 1
             ZongLan.MONEYchoice["items"] = 1
             ZongLan.MONEYchoice["items_updateItem"] = 1

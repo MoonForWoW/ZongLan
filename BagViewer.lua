@@ -6,8 +6,12 @@ local ITEM_COLUMNS = 14
 local CONTENT_WIDTH = ITEM_COLUMNS * ITEM_SIZE + (ITEM_COLUMNS - 1) * ITEM_GAP
 local EQUIPMENT_NORMAL_GAP = 0 -- 装备与普通物品之间的垂直间距
 
-local bagFrame
-local itemPool
+local viewerFrames = {}
+local VIEWER_OPTION = {
+    bag = "bagViewerShowBag",
+    bank = "bagViewerShowBank",
+}
+local UpdateViewerAnchors
 
 local function ResetItemButton(_, button)
     button:Hide()
@@ -157,8 +161,8 @@ local function GetLinkItems(...)
     return items, total
 end
 
-local function CreateBagFrame()
-    local frame = CreateFrame("Frame", "ZongLanBagViewer", UIParent, "BackdropTemplate")
+local function CreateViewerFrame(viewerType, frameName, title)
+    local frame = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
     frame:SetFrameStrata("TOOLTIP")
     frame:EnableMouse(true)
     frame:SetSize(CONTENT_WIDTH + 20, 200)
@@ -176,29 +180,46 @@ local function CreateBagFrame()
     frame.content:SetWidth(CONTENT_WIDTH)
     frame.content:SetHeight(1)
 
-    frame.headers = {}
-    frame.emptyTexts = {}
-    for i = 1, 2 do
-        local header = frame.content:CreateFontString(nil, "OVERLAY")
-        header:SetFont(ns.Font, 13, "OUTLINE")
-        header:SetTextColor(1, .82, 0)
-        header:SetJustifyH("LEFT")
-        frame.headers[i] = header
+    frame.header = frame.content:CreateFontString(nil, "OVERLAY")
+    frame.header:SetFont(ns.Font, 13, "OUTLINE")
+    frame.header:SetTextColor(1, .82, 0)
+    frame.header:SetJustifyH("LEFT")
+    frame.header:SetText(title)
 
-        local emptyText = frame.content:CreateFontString(nil, "OVERLAY")
-        emptyText:SetFont(ns.Font, 12, "OUTLINE")
-        emptyText:SetTextColor(.5, .5, .5)
-        emptyText:SetText(EMPTY or NONE or "Empty")
-        frame.emptyTexts[i] = emptyText
-    end
+    frame.emptyText = frame.content:CreateFontString(nil, "OVERLAY")
+    frame.emptyText:SetFont(ns.Font, 12, "OUTLINE")
+    frame.emptyText:SetTextColor(.5, .5, .5)
+    frame.emptyText:SetText(EMPTY or NONE or "Empty")
 
-    itemPool = CreateFramePool("Button", frame.content, "BackdropTemplate", ResetItemButton)
+    frame.itemPool = CreateFramePool("Button", frame.content, "BackdropTemplate", ResetItemButton)
+    ZL.CreateCloseButton(frame, ZL.IsRetail and 0 or 2, ZL.IsRetail and 0 or 2)
+    frame.CloseButton:SetScript("OnClick", function()
+        local owner = frame.owner
+        ZongLan.options[VIEWER_OPTION[viewerType]] = false
+        if owner then
+            local button = viewerType == "bag" and owner.BagButton or owner.BankButton
+            if button then
+                button:SetChecked(false)
+            end
+        end
+        frame:Hide()
+        if owner then
+            UpdateViewerAnchors(owner)
+        end
+    end)
 
     frame:SetScript("OnHide", function(self)
         self.renderID = (self.renderID or 0) + 1
         self.owner = nil
-        itemPool:ReleaseAll()
+        self.itemPool:ReleaseAll()
         GameTooltip:Hide()
+    end)
+
+    frame:SetScript("OnMouseUp", function(self)
+        ZL.equipFrame:StopMovingOrSizing()
+    end)
+    frame:SetScript("OnMouseDown", function(self)
+        ZL.equipFrame:StartMoving()
     end)
     frame:Hide()
     return frame
@@ -294,12 +315,10 @@ local function SortItems(items)
     end)
 end
 
-local function ContinueOnItemsLoaded(bagItems, bankItems, renderID, callback)
+local function ContinueOnItemsLoaded(frame, items, renderID, callback)
     local itemRefs = {}
-    for _, items in ipairs({ bagItems, bankItems }) do
-        for _, info in ipairs(items) do
-            itemRefs[info.link or info.itemID] = true
-        end
+    for _, info in ipairs(items) do
+        itemRefs[info.link or info.itemID] = true
     end
 
     local requests = {}
@@ -325,7 +344,7 @@ local function ContinueOnItemsLoaded(bagItems, bankItems, renderID, callback)
     local remaining = #requests
     local finished
     local function Finish()
-        if finished or not bagFrame or bagFrame.renderID ~= renderID then return end
+        if finished or frame.renderID ~= renderID then return end
         finished = true
         callback()
     end
@@ -341,7 +360,7 @@ local function ContinueOnItemsLoaded(bagItems, bankItems, renderID, callback)
     C_Timer.After(.5, Finish)
 end
 
-local function SetItemInfo(button, itemLink, itemID, stackable, renderID)
+local function SetItemInfo(frame, button, itemLink, itemID, stackable, renderID)
     local itemRef = itemLink or itemID
     local _, loadedLink, quality, itemLevel, _, _, _, _, equipLoc = GetItemInfo(itemRef)
     if itemLink or loadedLink then
@@ -364,7 +383,7 @@ local function SetItemInfo(button, itemLink, itemID, stackable, renderID)
     end
     if not item then return end
     item:ContinueOnItemLoad(function()
-        if not bagFrame or bagFrame.renderID ~= renderID or button.itemID ~= itemID or button.expectedLink ~= itemLink then return end
+        if frame.renderID ~= renderID or button.itemID ~= itemID or button.expectedLink ~= itemLink then return end
         local _, asyncLink, loadedQuality, loadedItemLevel, _, _, _, _, loadedEquipLoc = GetItemInfo(itemRef)
         button.itemLink = itemLink or asyncLink
         if loadedQuality then
@@ -377,15 +396,15 @@ local function SetItemInfo(button, itemLink, itemID, stackable, renderID)
     end)
 end
 
-local function RenderSection(frame, sectionIndex, title, items, top)
-    local header = frame.headers[sectionIndex]
+local function RenderSection(frame, title, items, top)
+    local header = frame.header
     header:ClearAllPoints()
     header:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 0, -top)
     header:SetText(title)
     header:Show()
     top = top + 22
 
-    local emptyText = frame.emptyTexts[sectionIndex]
+    local emptyText = frame.emptyText
     emptyText:ClearAllPoints()
     if #items == 0 then
         emptyText:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 2, -top)
@@ -405,7 +424,7 @@ local function RenderSection(frame, sectionIndex, title, items, top)
             end
             itemTop = itemTop + EQUIPMENT_NORMAL_GAP
         end
-        local button, isNew = itemPool:Acquire()
+        local button, isNew = frame.itemPool:Acquire()
         if isNew then
             InitializeItemButton(button)
         end
@@ -419,7 +438,7 @@ local function RenderSection(frame, sectionIndex, title, items, top)
         button.icon:SetTexture(select(5, GetItemInfoInstant(info.link or info.itemID)))
         button.count:SetText(info.count > 1 and info.count or "")
         button:Show()
-        SetItemInfo(button, info.link, info.itemID, info.stackable, frame.renderID)
+        SetItemInfo(frame, button, info.link, info.itemID, info.stackable, frame.renderID)
         column = column + 1
         if column == ITEM_COLUMNS then
             itemTop = itemTop + ITEM_SIZE + ITEM_GAP
@@ -434,65 +453,135 @@ local function RenderSection(frame, sectionIndex, title, items, top)
     return itemTop + 8
 end
 
-local function RenderBagFrame(owner, bagItems, bankItems, renderID)
-    if not bagFrame or bagFrame.renderID ~= renderID or not owner:IsShown() or not owner.click then return end
+local function RenderViewerFrame(frame, owner, title, items, renderID)
+    if frame.renderID ~= renderID or not owner:IsShown() or not owner.click then return end
 
-    SortItems(bagItems)
-    SortItems(bankItems)
-    itemPool:ReleaseAll()
+    SortItems(items)
+    frame.itemPool:ReleaseAll()
 
     local top = 4
-    top = RenderSection(bagFrame, 1, BAGSLOT or INVENTORY_TOOLTIP or "Bags", bagItems, top)
-    top = RenderSection(bagFrame, 2, BANK or "Bank", bankItems, top)
+    top = RenderSection(frame, title, items, top)
     local contentHeight = max(1, top)
-    bagFrame.content:SetHeight(contentHeight)
-    bagFrame:SetHeight(contentHeight + 10)
-    bagFrame:ClearAllPoints()
-    bagFrame:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, 0)
-    bagFrame:Show()
+    frame.content:SetHeight(contentHeight)
+    frame:SetHeight(contentHeight + 5)
+    frame:Show()
+    UpdateViewerAnchors(owner)
 end
 
-function ZL.ShowBagFrame(owner, isAccounts, realmID, player, colorplayer, class)
-    if not bagFrame then
-        bagFrame = CreateBagFrame()
+UpdateViewerAnchors = function(owner)
+    local bagFrame = viewerFrames.bag
+    local bankFrame = viewerFrames.bank
+    if bagFrame and bagFrame:IsShown() then
+        bagFrame:ClearAllPoints()
+        bagFrame:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, 2)
+    end
+    if bankFrame and bankFrame:IsShown() then
+        bankFrame:ClearAllPoints()
+        if bagFrame and bagFrame:IsShown() then
+            bankFrame:SetPoint("TOPLEFT", bagFrame, "BOTTOMLEFT", 0, 2)
+        else
+            bankFrame:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, 2)
+        end
+    end
+end
+
+local function ShowViewerFrame(viewerType, owner, isAccounts, realmID, player, class)
+    local title = viewerType == "bag" and (BAGSLOT or INVENTORY_TOOLTIP or "Bags") or (BANK or "Bank")
+    local frame = viewerFrames[viewerType]
+    if not frame then
+        local frameName = viewerType == "bag" and "ZongLanBagViewer" or "ZongLanBankViewer"
+        frame = CreateViewerFrame(viewerType, frameName, title)
+        viewerFrames[viewerType] = frame
     end
 
     local db = isAccounts and ZongLanDB or ZongLan
     local playerBag = db and db.bag and db.bag[realmID] and db.bag[realmID][player]
-    local bagItems = GetLinkItems(playerBag and playerBag.bagLink, playerBag and playerBag.bagKeyLink)
-    local bankItems = GetLinkItems(playerBag and playerBag.bankLink)
-    if #bagItems == 0 then
-        bagItems = GetItems(playerBag and playerBag.bag, playerBag and playerBag.bagKey)
-    end
-    if #bankItems == 0 then
-        bankItems = GetItems(playerBag and playerBag.bank)
+    local items
+    if viewerType == "bag" then
+        items = GetLinkItems(playerBag and playerBag.bagLink, playerBag and playerBag.bagKeyLink)
+        if #items == 0 then
+            items = GetItems(playerBag and playerBag.bag, playerBag and playerBag.bagKey)
+        end
+    else
+        items = GetLinkItems(playerBag and playerBag.bankLink)
+        if #items == 0 then
+            items = GetItems(playerBag and playerBag.bank)
+        end
     end
 
-    if bagFrame:IsShown() then
-        bagFrame:Hide()
-    else
-        itemPool:ReleaseAll()
+    if frame:IsShown() then
+        frame:Hide()
     end
-    bagFrame.renderID = (bagFrame.renderID or 0) + 1
-    local renderID = bagFrame.renderID
-    bagFrame.owner = owner
-    bagFrame:SetParent(owner)
-    bagFrame:SetFrameLevel(owner:GetFrameLevel() + 20)
+    frame.renderID = (frame.renderID or 0) + 1
+    local renderID = frame.renderID
+    frame.owner = owner
+    frame:SetParent(owner)
+    frame:SetFrameLevel(owner:GetFrameLevel() + 20)
     local r, g, b = GetClassColor(class)
-    bagFrame:SetBackdropBorderColor(r, g, b, 1)
+    frame:SetBackdropBorderColor(r, g, b, 1)
     if not owner.ZongLanBagViewerHooked then
         owner.ZongLanBagViewerHooked = true
         owner:HookScript("OnHide", function()
             ZL.HideBagFrame()
         end)
     end
-    ContinueOnItemsLoaded(bagItems, bankItems, renderID, function()
-        RenderBagFrame(owner, bagItems, bankItems, renderID)
+    ContinueOnItemsLoaded(frame, items, renderID, function()
+        RenderViewerFrame(frame, owner, title, items, renderID)
     end)
 end
 
+function ZL.ShowBagFrame(owner, isAccounts, realmID, player, colorplayer, class)
+    ShowViewerFrame("bag", owner, isAccounts, realmID, player, class)
+end
+
+function ZL.ShowBankFrame(owner, isAccounts, realmID, player, colorplayer, class)
+    ShowViewerFrame("bank", owner, isAccounts, realmID, player, class)
+end
+
+local function ToggleViewerFrame(viewerType, owner, isAccounts, realmID, player, class)
+    local option = VIEWER_OPTION[viewerType]
+    local show = not ZongLan.options[option]
+    ZongLan.options[option] = show
+    local button = viewerType == "bag" and owner.BagButton or owner.BankButton
+    if button then
+        button:SetChecked(show)
+    end
+    if show then
+        ShowViewerFrame(viewerType, owner, isAccounts, realmID, player, class)
+    else
+        local frame = viewerFrames[viewerType]
+        if frame then
+            frame:Hide()
+        end
+        UpdateViewerAnchors(owner)
+    end
+end
+
+function ZL.ToggleBagFrame(owner, isAccounts, realmID, player, colorplayer, class)
+    ToggleViewerFrame("bag", owner, isAccounts, realmID, player, class)
+end
+
+function ZL.ToggleBankFrame(owner, isAccounts, realmID, player, colorplayer, class)
+    ToggleViewerFrame("bank", owner, isAccounts, realmID, player, class)
+end
+
+function ZL.RestoreBagViewerFrames(owner, isAccounts, realmID, player, colorplayer, class)
+    owner.BagButton:SetChecked(ZongLan.options.bagViewerShowBag)
+    owner.BankButton:SetChecked(ZongLan.options.bagViewerShowBank)
+    if ZongLan.options.bagViewerShowBag then
+        ShowViewerFrame("bag", owner, isAccounts, realmID, player, class)
+    elseif viewerFrames.bag then
+        viewerFrames.bag:Hide()
+    end
+    if ZongLan.options.bagViewerShowBank then
+        ShowViewerFrame("bank", owner, isAccounts, realmID, player, class)
+    elseif viewerFrames.bank then
+        viewerFrames.bank:Hide()
+    end
+end
+
 function ZL.HideBagFrame()
-    if bagFrame then
-        bagFrame:Hide()
+    for _, frame in pairs(viewerFrames) do
+        frame:Hide()
     end
 end
