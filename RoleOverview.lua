@@ -1323,6 +1323,7 @@ GameTooltip:SetCurrencyByID(697)
 
     -- 日常任务
     local holidayDungeonIDs = { 286, 285, 287, 288 } -- 火焰节、万圣节、美酒节、情人节
+    local holidayEventIDs = { [324]=true, [341]=true, [372]=true, [423]=true }   -- 火焰节、万圣节、美酒节、情人节
     do
         ZongLan.QuestCD = ZongLan.QuestCD or {}
         ZongLan.QuestCD[realmID] = ZongLan.QuestCD[realmID] or {}
@@ -1476,17 +1477,51 @@ GameTooltip:SetCurrencyByID(697)
         end
 
         -- 节日本
-        local init
-        function ZL.InitHoliday()
-            if init then return end
-            init = true
-            ZL.RegisterEvent("LFG_COMPLETION_REWARD", function()
-                local dungeonID = select(10, GetInstanceInfo())
-                if dungeonID and ZL.ValueInTable(holidayDungeonIDs, dungeonID) then
-                    SaveDayQuest("holiday")
+        if ZL.IsTitan or ZL.IsMOP then
+            local init
+            function ZL.InitHoliday()
+                if init then return end
+                init = true
+                ZL.RegisterEvent("LFG_COMPLETION_REWARD", function()
+                    local dungeonID = select(10, GetInstanceInfo())
+                    if dungeonID and ZL.ValueInTable(holidayDungeonIDs, dungeonID) then
+                        SaveDayQuest("holiday")
+                    end
+                end)
+            end
+
+            local f = CreateFrame("Frame")
+            f:RegisterEvent("PLAYER_ENTERING_WORLD")
+            f:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST")
+            f:SetScript("OnEvent", function(self, event, isLogin, isReload)
+                if event == "PLAYER_ENTERING_WORLD" then
+                    if isLogin then
+                        return
+                    else
+                        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+                    end
+                end
+
+                local currentCalendarTime = C_DateAndTime.GetCurrentCalendarTime()
+                local day = currentCalendarTime.monthDay
+                local numEvents = C_Calendar.GetNumDayEvents(0, day)
+                if numEvents <= 0 then
+                    return
+                end
+
+                for i = 1, numEvents do
+                    local event = C_Calendar.GetDayEvent(0, day, i)
+                    if event and holidayEventIDs[event.eventID] then
+                        ZL.hasHoliday = true
+                    end
+                end
+
+                if ZL.hasHoliday then
+                    ZL.InitHoliday()
                 end
             end)
         end
+
 
         -- 交任务时触发
         ZL.RegisterEvent("QUEST_TURNED_IN", function(self, event, questID)
@@ -1896,7 +1931,7 @@ GameTooltip:SetCurrencyByID(697)
             end
         end
         local professionCooldownPending
-        local delay=1
+        local delay = 1
         local function Go()
             professionCooldownPending = nil
             GetCooldown()

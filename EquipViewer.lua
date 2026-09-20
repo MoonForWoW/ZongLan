@@ -787,7 +787,7 @@ ZL.Init(function()
                 self:StartMoving()
             end)
         else
-            mainFrame.tipText:Show()
+            mainFrame.tipText:SetShown(not BiaoGeAIdb)
             mainFrame:EnableMouse(false)
             mainFrame:SetMovable(false)
             mainFrame:SetScript("OnMouseUp", nil)
