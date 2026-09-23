@@ -513,6 +513,14 @@ local function FormatTitanRealmName(realmName)
         elseif realmName:find("时光V") then
             return "时光V"
         end
+    elseif ZL.IsForever then
+        if realmName:find("PvP") then
+            return "PvP"
+        elseif realmName:find("PvE") then
+            return "PvE"
+        elseif realmName:find("RP") then
+            return "RP"
+        end
     end
     return realmName
 end
@@ -1163,7 +1171,7 @@ function ZL.SetFBCD(self, position, click, refresh)
             end
         end)
         ZL.UpdateFBCDFrameScale()
-        ZL.CreateCloseButton(mainFrame, ZL.IsRetail and 0 or 2, ZL.IsRetail and 0 or 2)
+        ZL.CreateCloseButton(mainFrame)
         if click then
             for i = #UISpecialFrames, 1, -1 do
                 local name = UISpecialFrames[i]

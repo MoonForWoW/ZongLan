@@ -29,6 +29,9 @@ ZL.Init(function()
             INVTYPE_RANGED = 1,         -- 远程武器
             INVTYPE_CLOAK = 1,          -- 披风
         }
+    elseif ZL.IsForever then
+        enchantCount = {
+        }
     elseif ZL.IsTBC then
         enchantCount = {
             INVTYPE_HEAD = 1,           -- 头
@@ -199,7 +202,7 @@ ZL.Init(function()
                 leftFrame = f
 
                 mainFrame.CloseButton = CreateFrame("Button", nil, mainFrame, "UIPanelCloseButton")
-                mainFrame.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 2, 2)
+                mainFrame.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", ZL.CloseButtonOffset, ZL.CloseButtonOffset)
 
                 local function CreateViewerButton(texture, tooltip, toggleFunc)
                     local button = CreateFrame("CheckButton", nil, f, "BackdropTemplate")
@@ -556,7 +559,7 @@ ZL.Init(function()
             if itemID then
                 iconTex, _, subTypeID = select(5, GetItemInfoInstant(itemID))
             elseif spellID then
-                iconTex = select(3, GetSpellInfo(spellID))
+                iconTex = C_Spell.GetSpellTexture(spellID)
             end
             local height = bt:GetHeight()
             local f = CreateFrame("Frame", nil, bt)

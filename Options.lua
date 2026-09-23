@@ -879,8 +879,7 @@ ZL.Init(function()
             chooseFrame:Hide()
             tinsert(roleOverviewPopups, chooseFrame)
 
-            local closeBT = CreateFrame("Button", nil, chooseFrame, "UIPanelCloseButton")
-            closeBT:SetPoint("TOPRIGHT", 2, 2)
+            ZL.CreateCloseButton(chooseFrame)
 
             local title = chooseFrame:CreateFontString()
             title:SetFont(ns.Font, 15, "OUTLINE")
@@ -926,112 +925,8 @@ ZL.Init(function()
             local name = "roleOverviewShowCustomItem"
             ZongLan.options[name] = ZongLan.options[name] or 1
             local itemListName = "roleOverviewCustomItems"
-            local presetPotionIDs, presetFlaskIDs
-            if ZL.IsVanilla then
-                presetPotionIDs = {
-                    13442, -- 强效怒气药水
-                    13455, -- 强效石盾药水
-                }
-                presetFlaskIDs = {
-                    13510, -- 泰坦合剂
-                    13511, -- 精炼智慧合剂
-                    13512, -- 超级能量合剂
-                    13513, -- 多重抗性合剂
-                }
-            elseif ZL.IsTBC then
-                presetPotionIDs = {
-                    22788, -- 烈焰菇
-                    22828, -- 疯狂力量药水
-                    22837, -- 英雄药水
-                    22838, -- 加速药水
-                    22839, -- 毁灭药水
-                    22849, -- 铁盾药水
-                }
-                presetFlaskIDs = {
-                    22851, -- 强固合剂
-                    22853, -- 强效回复合剂
-                    22854, -- 无情突袭合剂
-                    22861, -- 盲目光芒合剂
-                    22866, -- 纯粹死亡合剂
-                    33208, -- 多彩奇迹合剂
-                }
-            elseif ZL.IsTitan then
-                presetPotionIDs = {
-                    40211, -- 速度药水
-                    40212, -- 狂野魔法药水
-                    40093, -- 不灭药水
-                    20007, -- 狂野魔精药水
-                }
-                presetFlaskIDs = {
-                    46376, -- 冰霜巨龙合剂
-                    46377, -- 无尽怒气合剂
-                    46378, -- 纯净魔精合剂
-                    46379, -- 石血合剂
-                    40079, -- 次级坚韧合剂
-                    44939, -- 次级抗性合剂
-                    13511, -- 精炼智慧合剂
-                }
-            elseif ZL.IsWLK_80 then
-                presetPotionIDs = {
-                    40211, -- 速度药水
-                    40212, -- 狂野魔法药水
-                    40093, -- 不灭药水
-                }
-                presetFlaskIDs = {
-                    46376, -- 冰霜巨龙合剂
-                    46377, -- 无尽怒气合剂
-                    46378, -- 纯净魔精合剂
-                    46379, -- 石血合剂
-                    40079, -- 次级坚韧合剂
-                    44939, -- 次级抗性合剂
-                    13511, -- 精炼智慧合剂
-                }
-            elseif ZL.IsCTM then
-                presetPotionIDs = {
-                    58146, -- 魔像之血药水
-                    58145, -- 托维尔药水
-                    58091, -- 火山药水
-                    58090, -- 土灵药水
-                }
-                presetFlaskIDs = {
-                    58088, -- 泰坦之力合剂
-                    58087, -- 风行合剂
-                    58086, -- 龙智合剂
-                    58085, -- 钢皮合剂
-                    67438, -- 流水合剂
-                }
-            elseif ZL.IsMOP then
-                presetPotionIDs = {
-                    76095, -- 魔古之力药水
-                    76089, -- 春华药水
-                    76093, -- 青龙药水
-                    76090, -- 高山药水
-                }
-                presetFlaskIDs = {
-                    76088, -- 冬噬合剂
-                    76084, -- 春华合剂
-                    76085, -- 暖阳合剂
-                    76086, -- 秋叶合剂
-                    76087, -- 大地合剂
-                }
-            elseif ZL.IsRetail then
-                presetPotionIDs = {
-                    241308, 241309, -- 光明潜能
-                    241296, 241297, -- 狂热药水
-                    241288, 241289, -- 鲁莽药水
-                    241292, 241293, -- 狂放饮剂
-                    271886, 271887, -- 流光药剂
-                    271889, 271890, -- 诱惑秘药
-                }
-                presetFlaskIDs = {
-                    241320, 241321, -- 萨拉斯抗性合剂
-                    241322, 241323, -- 魔导师合剂
-                    241324, 241325, -- 血骑士合剂
-                    241326, 241327, -- 破碎残阳合剂
-                }
-            end
-            presetPotionIDs = presetPotionIDs or {}
-            presetFlaskIDs = presetFlaskIDs or {}
+            local presetPotionIDs = ns.presetPotionIDs or {}
+            local presetFlaskIDs = ns.presetFlaskIDs or {}
             if type(ZongLan.options[itemListName]) ~= "table" then
                 ZongLan.options[itemListName] = {}
                 local oldItemID = tonumber(ZongLan.options.roleOverviewCustomItemID)
@@ -1105,8 +1000,7 @@ ZL.Init(function()
             itemFrame:Hide()
             tinsert(roleOverviewPopups, itemFrame)
 
-            local closeBT = CreateFrame("Button", nil, itemFrame, "UIPanelCloseButton")
-            closeBT:SetPoint("TOPRIGHT", 2, 2)
+            ZL.CreateCloseButton(itemFrame)
 
             local title = itemFrame:CreateFontString()
             title:SetFont(ns.Font, 15, "OUTLINE")
@@ -1857,6 +1751,17 @@ ZL.Init(function()
             local startNum = 1
             lastFrame = CreateTitle(L["团本"], "00BFFF")
             CreateFBCDbutton(1, x[startNum])
+        elseif ZL.IsForever then
+            local z = { ZL.FBCount, #ZL.factionTbl }
+            local x = {}
+            for i, v in ipairs(z) do
+                x[i] = (x[i - 1] or 0) + v
+            end
+            local startNum = 1
+            lastFrame = CreateTitle(L["团本"], "00BFFF")
+            CreateFBCDbutton(1, x[startNum])
+            lastFrame = CreateTitle(L["声望"], "FFFF00")
+            CreateFBCDbutton(x[startNum] + 1, x[startNum + 1])
         end
         if not ZL.IsRetail then
             lastFrame = CreateTitle(L["专业技能点"], ZL.SKILLall_table[1].color)

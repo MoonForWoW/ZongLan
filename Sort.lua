@@ -347,8 +347,7 @@ function ZL.CreateRoleOverviewSortFrame(bt, update)
         ZL.RoleOverviewSortFrame = f
         tinsert(UISpecialFrames, "BGRoleOverviewSortFrame")
 
-        f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-        f.CloseButton:SetPoint("TOPRIGHT", 2, 2)
+        ZL.CreateCloseButton(f)
 
         local t = f:CreateFontString()
         t:SetFont(ns.Font, 15, "OUTLINE")

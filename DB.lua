@@ -52,11 +52,7 @@ do
     ZL.itemOnEnterDelay = 0.02
     ZL.addonChannelCount = 10
     ZL.LastBagItemFrame = {}
-    if ZL.IsRetail then
-        ZL.CloseButtonOffset = 0
-    else
-        ZL.CloseButtonOffset = 2
-    end
+    ZL.CloseButtonOffset = ZL.IsNewUI and -2 or 2
 end
 
 -- 初始化
@@ -64,7 +60,6 @@ do
     -- 基础信息
     do
         if ZL.IsVanilla_Sod then
-            ZL.FB1 = "MCsod"
             ZL.fullLevel = 60
             ZL.fullLevel_RoleOverview = 25
         end
@@ -74,7 +69,7 @@ do
         end
         if ZL.IsTBC then
             ZL.fullLevel = 70
-            ZL.fullLevel_RoleOverview = 35
+            ZL.fullLevel_RoleOverview = 58
         end
         if ZL.IsWLK_80 then
             ZL.fullLevel = 80
@@ -96,6 +91,10 @@ do
         if ZL.IsRetail then
             ZL.fullLevel = 90
             ZL.fullLevel_RoleOverview = 80
+        end
+        if ZL.IsForever then
+            ZL.fullLevel = 60
+            ZL.fullLevel_RoleOverview = 10
         end
     end
 
@@ -299,7 +298,7 @@ ZL.Init(function()
     if ZongLan.options.bagViewerShowBank == nil then
         ZongLan.options.bagViewerShowBank = true
     end
-    
+
     if not ZongLan.options.SearchHistory then
         ZongLan.options.SearchHistory = {}
     end
@@ -330,139 +329,203 @@ ZL.Init(function()
                 ZL.UpdateMeetingHornLevelButton()
             end
         end)
+    end
+    -- 天赋
+    do
+        local GetTalent
+        if ZL.IsForever then
+            GetTalent = function(_, event)
+                if not (C_Traits and C_Traits.GetConfigInfo and C_Traits.GetGroupDisplayInfoByTreeID and C_Traits.GetGroupCurrencyInfo) then
+                    ZongLan.playerInfo[realmID][player].talent = nil
+                    return
+                end
 
-        -- 天赋
-        do
-            local function GetTalent(_, event)
-                local specIndex
-                if ZL.verOver4 then
-                    specIndex = C_SpecializationInfo.GetSpecialization()
-                    if specIndex == 0 or specIndex == 5 then
-                        specIndex = nil
-                    end
-                else
-                    local maxNum = 0
-                    for i = 1, 3 do
-                        local num = select(5, GetTalentTabInfo(i, nil, nil, GetActiveTalentGroup()))
-                        if num and num >= maxNum then
-                            maxNum = num
-                            specIndex = i
+                local configID = C_ClassTalents and C_ClassTalents.GetActiveConfigID and C_ClassTalents.GetActiveConfigID()
+                if not configID and C_SpecializationInfo.GetCombatConfigIDForSpecGroup then
+                    configID = C_SpecializationInfo.GetCombatConfigIDForSpecGroup(C_SpecializationInfo.GetActiveSpecGroup())
+                end
+
+                local configInfo = configID and C_Traits.GetConfigInfo(configID)
+                if not configInfo or not configInfo.treeIDs then
+                    ZongLan.playerInfo[realmID][player].talent = nil
+                    return
+                end
+
+                local groups, groupIDs, knownGroupIDs = {}, {}, {}
+                for _, treeID in ipairs(configInfo.treeIDs) do
+                    local displayInfos = C_Traits.GetGroupDisplayInfoByTreeID(treeID)
+                    for _, displayInfo in ipairs(displayInfos or {}) do
+                        if not knownGroupIDs[displayInfo.groupID] then
+                            knownGroupIDs[displayInfo.groupID] = true
+                            groups[#groups + 1] = displayInfo
                         end
                     end
-                    if maxNum == 0 then specIndex = nil end
+                end
+
+                table.sort(groups, function(a, b)
+                    if a.orderIndex == b.orderIndex then
+                        return a.groupID < b.groupID
+                    end
+                    return a.orderIndex < b.orderIndex
+                end)
+                for _, group in ipairs(groups) do
+                    groupIDs[#groupIDs + 1] = group.groupID
+                end
+
+                local spentByGroup = {}
+                for _, groupInfo in ipairs(C_Traits.GetGroupCurrencyInfo(configID, groupIDs) or {}) do
+                    local currencyInfo = groupInfo.currencyInfos and groupInfo.currencyInfos[1]
+                    spentByGroup[groupInfo.traitNodeGroupID] = currencyInfo and currencyInfo.spent or 0
+                end
+
+                local specIndex, maxPoints
+                for index, group in ipairs(groups) do
+                    local spent = spentByGroup[group.groupID] or 0
+                    if not maxPoints or spent >= maxPoints then
+                        specIndex, maxPoints = index, spent
+                    end
+                end
+                if not maxPoints or maxPoints == 0 then
+                    specIndex = nil
                 end
                 ZongLan.playerInfo[realmID][player].talent = specIndex
             end
-
-            local f = CreateFrame("Frame")
-            f:RegisterEvent("PLAYER_TALENT_UPDATE")
-            f:RegisterEvent("PLAYER_ENTERING_WORLD")
-            if ZL.verOver4 then
-                f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-            end
-            f:SetScript("OnEvent", function(self, event, ...)
-                if event == "PLAYER_ENTERING_WORLD" then
-                    self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        elseif ZL.verOver4 then
+            GetTalent = function(_, event)
+                local specIndex = C_SpecializationInfo.GetSpecialization()
+                if specIndex == 0 or specIndex == 5 then
+                    specIndex = nil
                 end
-                self.t = 0
-                self:SetScript("OnUpdate", function(_, t)
-                    self.t = self.t + t
-                    if self.t > 1 then
-                        self:SetScript("OnUpdate", nil)
-                        GetTalent()
+                ZongLan.playerInfo[realmID][player].talent = specIndex
+            end
+        else
+            GetTalent = function(_, event)
+                local specIndex
+                local maxNum = 0
+                for i = 1, 3 do
+                    local num = select(5, GetTalentTabInfo(i, nil, nil, GetActiveTalentGroup()))
+                    if num and num >= maxNum then
+                        maxNum = num
+                        specIndex = i
                     end
-                end)
+                end
+                if maxNum == 0 then specIndex = nil end
+                ZongLan.playerInfo[realmID][player].talent = specIndex
+            end
+        end
+
+        local f = CreateFrame("Frame")
+        f:RegisterEvent("PLAYER_TALENT_UPDATE")
+        f:RegisterEvent("PLAYER_ENTERING_WORLD")
+        if ZL.verOver4 then
+            f:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+        end
+        if ZL.IsForever then
+            f:RegisterEvent("TRAIT_CONFIG_UPDATED")
+            f:RegisterEvent("ACTIVE_COMBAT_CONFIG_CHANGED")
+        end
+        f:SetScript("OnEvent", function(self, event, ...)
+            if event == "PLAYER_ENTERING_WORLD" then
+                self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+            end
+            self.t = 0
+            self:SetScript("OnUpdate", function(_, t)
+                self.t = self.t + t
+                if self.t > 1 then
+                    self:SetScript("OnUpdate", nil)
+                    GetTalent()
+                end
             end)
+        end)
 
-            function ZL.GetTalentIcon(class, talent, w)
-                w = w or 0
-                if talent then
-                    local a, b, c, d = unpack(ZL.iconTexCoord)
-                    local coord = format("100:100:%s:%s:%s:%s", a * 100, b * 100, c * 100, d * 100)
-                    local tex = ZL.talentIcon[class][talent]
-                    if tex then
-                        return format("|T%s:%s:%s:0:0:%s|t", ZL.talentIcon[class][talent], w, w, coord)
-                    end
+        function ZL.GetTalentIcon(class, talent, w)
+            w = w or 0
+            if talent then
+                local a, b, c, d = unpack(ZL.iconTexCoord)
+                local coord = format("100:100:%s:%s:%s:%s", a * 100, b * 100, c * 100, d * 100)
+                local tex = ZL.talentIcon[class][talent]
+                if tex then
+                    return format("|T%s:%s:%s:0:0:%s|t", ZL.talentIcon[class][talent], w, w, coord)
                 end
-                return format("|A:GarrMission_ClassIcon-%s:%s:%s|a", class, w, w)
             end
+            return format("|A:GarrMission_ClassIcon-%s:%s:%s|a", class, w, w)
+        end
 
-            ZL.talentIcon = {
-                DEATHKNIGHT = {
-                    "Interface\\Icons\\Spell_Deathknight_BloodPresence", -- T
-                    "Interface\\Icons\\Spell_Deathknight_FrostPresence",
-                    "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
-                },
-                PALADIN = {
-                    "Interface\\Icons\\Spell_Holy_HolyBolt",     -- N
-                    "Interface\\Icons\\Spell_Holy_DevotionAura", -- T
-                    "Interface\\Icons\\Spell_Holy_AuraOfLight",
-                },
-                WARRIOR = {
-                    "Interface\\Icons\\ability_warrior_savageblow",
-                    "Interface\\Icons\\ability_warrior_innerrage",
-                    "Interface\\Icons\\ability_warrior_defensivestance", -- T
-                },
-                EVOKER = {                                               -- 唤魔师
-                    "Interface\\Icons\\ability_evoker_powerswell",
-                    "Interface\\Icons\\ability_evoker_emeraldblossom",
-                    "Interface\\Icons\\ability_evoker_reversion_green",
-                },
-                SHAMAN = {
-                    "Interface\\Icons\\spell_nature_lightning",
-                    "Interface\\Icons\\spell_nature_lightningshield",
-                    "Interface\\Icons\\Spell_Nature_HealingWaveGreater", -- N
-                },
-                HUNTER = {
-                    "Interface\\Icons\\Ability_Hunter_BeastTaming",
-                    "Interface\\Icons\\Ability_Marksmanship",
-                    "Interface\\Icons\\Ability_Hunter_SwiftStrike",
-                },
-                DEMONHUNTER = {
-                    "Interface\\Icons\\ability_demonhunter_specdps",
-                    "Interface\\Icons\\Ability_DemonHunter_SpecTank",
-                    "Interface\\Icons\\classicon_demonhunter_void",
-                },
-                MONK = {
-                    "Interface/Icons/spell_monk_brewmaster_spec", -- 酒仙
-                    "Interface/Icons/spell_monk_mistweaver_spec", -- 织雾
-                    "Interface/Icons/spell_monk_windwalker_spec", -- 踏风
-                },
-                ROGUE = {
-                    "Interface\\Icons\\ability_rogue_eviscerate",
-                    "Interface\\Icons\\ability_backstab",
-                    "Interface\\Icons\\ability_stealth",
-                },
-                MAGE = {
-                    "Interface\\Icons\\inv_misc_rune_03",
-                    "Interface\\Icons\\spell_fire_firebolt02",
-                    "Interface\\Icons\\spell_frost_frostbolt02",
-                },
-                WARLOCK = {
-                    "Interface\\Icons\\spell_shadow_deathcoil",
-                    "Interface\\Icons\\spell_shadow_metamorphosis",
-                    "Interface\\Icons\\spell_shadow_rainoffire",
-                },
-                PRIEST = {
-                    "Interface\\Icons\\spell_holy_wordfortitude",  -- N
-                    "Interface\\Icons\\spell_holy_guardianspirit", -- N
-                    "Interface\\Icons\\spell_shadow_shadowwordpain",
-                },
+        ZL.talentIcon = {
+            DEATHKNIGHT = {
+                "Interface\\Icons\\Spell_Deathknight_BloodPresence", -- T
+                "Interface\\Icons\\Spell_Deathknight_FrostPresence",
+                "Interface\\Icons\\Spell_Deathknight_UnholyPresence",
+            },
+            PALADIN = {
+                "Interface\\Icons\\Spell_Holy_HolyBolt",     -- N
+                "Interface\\Icons\\Spell_Holy_DevotionAura", -- T
+                "Interface\\Icons\\Spell_Holy_AuraOfLight",
+            },
+            WARRIOR = {
+                "Interface\\Icons\\ability_warrior_savageblow",
+                "Interface\\Icons\\ability_warrior_innerrage",
+                "Interface\\Icons\\ability_warrior_defensivestance", -- T
+            },
+            EVOKER = {                                               -- 唤魔师
+                "Interface\\Icons\\ability_evoker_powerswell",
+                "Interface\\Icons\\ability_evoker_emeraldblossom",
+                "Interface\\Icons\\ability_evoker_reversion_green",
+            },
+            SHAMAN = {
+                "Interface\\Icons\\spell_nature_lightning",
+                "Interface\\Icons\\spell_nature_lightningshield",
+                "Interface\\Icons\\Spell_Nature_HealingWaveGreater", -- N
+            },
+            HUNTER = {
+                "Interface\\Icons\\Ability_Hunter_BeastTaming",
+                "Interface\\Icons\\Ability_Marksmanship",
+                "Interface\\Icons\\Ability_Hunter_SwiftStrike",
+            },
+            DEMONHUNTER = {
+                "Interface\\Icons\\ability_demonhunter_specdps",
+                "Interface\\Icons\\Ability_DemonHunter_SpecTank",
+                "Interface\\Icons\\classicon_demonhunter_void",
+            },
+            MONK = {
+                "Interface/Icons/spell_monk_brewmaster_spec", -- 酒仙
+                "Interface/Icons/spell_monk_mistweaver_spec", -- 织雾
+                "Interface/Icons/spell_monk_windwalker_spec", -- 踏风
+            },
+            ROGUE = {
+                "Interface\\Icons\\ability_rogue_eviscerate",
+                "Interface\\Icons\\ability_backstab",
+                "Interface\\Icons\\ability_stealth",
+            },
+            MAGE = {
+                "Interface\\Icons\\inv_misc_rune_03",
+                "Interface\\Icons\\spell_fire_firebolt02",
+                "Interface\\Icons\\spell_frost_frostbolt02",
+            },
+            WARLOCK = {
+                "Interface\\Icons\\spell_shadow_deathcoil",
+                "Interface\\Icons\\spell_shadow_metamorphosis",
+                "Interface\\Icons\\spell_shadow_rainoffire",
+            },
+            PRIEST = {
+                "Interface\\Icons\\spell_holy_wordfortitude",  -- N
+                "Interface\\Icons\\spell_holy_guardianspirit", -- N
+                "Interface\\Icons\\spell_shadow_shadowwordpain",
+            },
+        }
+        if ZL.verOver4 then
+            ZL.talentIcon.DRUID = {
+                "Interface\\Icons\\spell_nature_starfall",     -- 鸟
+                "Interface\\Icons\\ability_druid_catform",     -- 猫
+                "Interface\\Icons\\ability_racial_bearform",   -- 熊
+                "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
             }
-            if ZL.verOver4 then
-                ZL.talentIcon.DRUID = {
-                    "Interface\\Icons\\spell_nature_starfall",     -- 鸟
-                    "Interface\\Icons\\ability_druid_catform",     -- 猫
-                    "Interface\\Icons\\ability_racial_bearform",   -- 熊
-                    "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
-                }
-            else
-                ZL.talentIcon.DRUID = {
-                    "Interface\\Icons\\spell_nature_starfall",
-                    "Interface\\Icons\\ability_racial_bearform",
-                    "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
-                }
-            end
+        else
+            ZL.talentIcon.DRUID = {
+                "Interface\\Icons\\spell_nature_starfall",
+                "Interface\\Icons\\ability_racial_bearform",
+                "Interface\\Icons\\Spell_Nature_HealingTouch", -- N
+            }
         end
     end
 
@@ -601,6 +664,7 @@ SlashCmdList["ZongLanRoleOverview"] = function()
 end
 SLASH_ZongLanRoleOverview1 = "/zl"
 SLASH_ZongLanRoleOverview2 = "/zonglan"
+SLASH_ZongLanRoleOverview3 = "/bgr"
 
 SlashCmdList["ZongLanRoleOverviewError"] = function()
     C_Timer.After(0, function()

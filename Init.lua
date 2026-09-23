@@ -3,6 +3,18 @@ local AddonName, ns = ...
 local L = ns.L
 ns.GetClassColor = GetClassColor
 local GetClassColor = ns.GetClassColor
+if not GetItemInfo then
+    GetItemInfo = C_Item.GetItemInfo
+end
+if not GetItemInfoInstant then
+    GetItemInfoInstant = C_Item.GetItemInfoInstant
+end
+if not GetItemQualityColor then
+    GetItemQualityColor = C_Item.GetItemQualityColor
+end
+if not GetItemCount then
+    GetItemCount = C_Item.GetItemCount
+end
 
 local pt = print
 
@@ -124,74 +136,73 @@ do
 end
 
 -- 版本号
-if GetCurrentRegion() ~= 5 then
-    ZL.IsTW = true
-end
-
 local ver = select(4, GetBuildInfo())
-if ver < 30000 then
-    ZL.verLess2 = true
-end
-if ver >= 30000 then
-    ZL.verOver3 = true
-end
-if ver >= 40000 then
-    ZL.verOver4 = true
-else
-    ZL.verLess3 = true
-end
-if ver >= 50000 then
-    ZL.verOver5 = true
-else
-    ZL.verLess4 = true
-end
-
-if ver < 20000 then
-    ZL.IsVanilla = true
-    ZL.onlyOneHard = true
-    if (C_Engraving and C_Engraving.IsEngravingEnabled()) then
-        ZL.IsVanilla_Sod = true
-    else
-        ZL.IsVanilla_60 = true
+do
+    if GetCurrentRegion() ~= 5 then
+        ZL.IsTW = true
     end
-end
+    if ver < 30000 then
+        ZL.verLess2 = true
+    end
+    if ver >= 30000 then
+        ZL.verOver3 = true
+    end
+    if ver >= 40000 then
+        ZL.verOver4 = true
+    else
+        ZL.verLess3 = true
+    end
+    if ver >= 50000 then
+        ZL.verOver5 = true
+    else
+        ZL.verLess4 = true
+    end
 
-if ver >= 20000 and ver < 30000 then
-    ZL.IsTBC = true
-    ZL.onlyOneHard = true
-end
-
-if ver >= 30000 and ver < 40000 then
-    ZL.IsWLK = true
-    if ver >= 38000 then
-        ZL.IsTitan = true
+    if ver < 16000 then
         ZL.onlyOneHard = true
-    else
-        ZL.IsWLK_80 = true
+        ZL.IsVanilla = true
+        if (C_Engraving and C_Engraving.IsEngravingEnabled()) then
+            ZL.IsVanilla_Sod = true
+        else
+            ZL.IsVanilla_60 = true
+        end
+    elseif ver < 20000 then
+        ZL.onlyOneHard = true
+        ZL.IsForever = true
+        ZL.IsNewUI = true -- 正式服/无限服UI
+    end
+    if ver >= 20000 and ver < 30000 then
+        ZL.IsTBC = true
+        ZL.onlyOneHard = true
+    end
+    if ver >= 30000 and ver < 40000 then
+        ZL.IsWLK = true
+        if ver >= 38000 then
+            ZL.IsTitan = true
+            ZL.onlyOneHard = true
+        else
+            ZL.IsWLK_80 = true
+        end
+    end
+    if ver >= 40000 and ver < 50000 then
+        ZL.IsCTM = true
+    end
+    if ver >= 50000 and ver < 60000 then
+        ZL.IsMOP = true
+        if ZL.IsTW then
+            ZL.IsMOP_TW = true
+        else
+            ZL.IsMOP_CN = true
+        end
+        -- ZL.IsTW = true
+        -- ZL.IsMOP_TW = true
+        -- ZL.IsMOP_CN = nil
+    end
+    if ver >= 110000 then
+        ZL.IsRetail = true
+        ZL.IsNewUI = true -- 正式服/无限服UI
     end
 end
-
-if ver >= 40000 and ver < 50000 then
-    ZL.IsCTM = true
-end
-
-if ver >= 50000 and ver < 60000 then
-    ZL.IsMOP = true
-    if ZL.IsTW then
-        ZL.IsMOP_TW = true
-    else
-        ZL.IsMOP_CN = true
-    end
-    -- ZL.IsTW = true
-    -- ZL.IsMOP_TW = true
-    -- ZL.IsMOP_CN = nil
-end
-
-if ver >= 110000 then
-    ZL.IsRetail = true
-end
-
-ZL.IsNewUI = true
 
 
 function ZL.IsWLKFB(FB)

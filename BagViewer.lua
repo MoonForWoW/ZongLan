@@ -192,7 +192,7 @@ local function CreateViewerFrame(viewerType, frameName, title)
     frame.emptyText:SetText(EMPTY or NONE or "Empty")
 
     frame.itemPool = CreateFramePool("Button", frame.content, "BackdropTemplate", ResetItemButton)
-    ZL.CreateCloseButton(frame, ZL.IsRetail and 0 or 2, ZL.IsRetail and 0 or 2)
+    ZL.CreateCloseButton(frame)
     frame.CloseButton:SetScript("OnClick", function()
         local owner = frame.owner
         ZongLan.options[VIEWER_OPTION[viewerType]] = false

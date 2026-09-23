@@ -576,10 +576,11 @@ end
 
 function ZL.CreateCloseButton(f, x, y, point)
     f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    f.CloseButton:SetPoint(point or "TOPRIGHT", x or ZL.IsRetail and 0 or 5, y or ZL.IsRetail and 0 or 5)
+    f.CloseButton:SetPoint(point or "TOPRIGHT", x or ZL.IsNewUI and -2 or 2, y or ZL.IsNewUI and -2 or 2)
     f.CloseButton:SetScript("OnClick", function(self)
         f:Hide()
     end)
+    return f.CloseButton
 end
 
 function ZL.GetDiffShortName(diff)
