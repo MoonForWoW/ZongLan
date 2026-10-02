@@ -11,7 +11,6 @@ ns.LibBG                                    = LibBG
 LibBG.UIDropDownMenu_HandleGlobalMouseEvent = function() end
 
 local realmID                               = GetRealmID()
-local player                                = ZL.playerName
 local realmName                             = ZL.realmName
 local GetAddOnMetadata                      = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
 local IsAddOnLoaded                         = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
@@ -22,11 +21,6 @@ ZongLanTooltip                              = CreateFrame("GameTooltip", "ZongLa
 -- 游戏按键设置
 BINDING_HEADER_ZONGLAN                      = "ZongLan"
 BINDING_NAME_ZONGLAN_ROLEOVERVIEW           = L["打开/关闭角色总览"]
-
-ZL.blackListPlayer                          = {
-}
-if ZL.blackListPlayer[realmID] and ZL.blackListPlayer[realmID][ZL.playerName] then
-end
 
 ns.Interface = "Interface\\AddOns\\" .. AddonName .. "\\"
 
@@ -196,59 +190,6 @@ do
         ZL.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK -- 按键音效
         ZL.sound2 = 569593                      -- 升级音效
         ZL.sound3 = SOUNDKIT.IG_MAINMENU_CLOSE  -- 菜单打开音效
-
-        local Interface = ns.Interface .. "Media\\sound\\"
-        ZL.soundAuthor = {
-            { ID = "AI", addonName = AddonName, isBiaoGe = true },
-        }
-        ZL.soundTbl = ZL.soundAuthor
-        ZL.soundTbl2 = {
-            { ID = "alchemyReady", name = "炼金转化已就绪" },
-            { ID = "tailorReady", name = "裁缝洗布已就绪" },
-            { ID = "leatherworkingReady", name = "制皮筛盐已就绪" },
-        }
-        --[[
-/run ZL.PlaySound("paimai")
-/run ZL.PlaySound("hope")
-]]
-        local function DefaultSound()
-            for i = 1, C_AddOns.GetNumAddOns() do
-                local addonName = C_AddOns.GetAddOnInfo(i)
-                local enabled = C_AddOns.GetAddOnEnableState(i, player)
-                if C_AddOns.GetAddOnMetadata(i, "X-BiaoGe-Voice") and enabled ~= 0 then
-                    local author = C_AddOns.GetAddOnMetadata(i, "Author")
-                    tinsert(ZL.soundAuthor, { ID = author, addonName = addonName })
-                end
-            end
-            for _, value in ipairs(ZL.soundAuthor) do
-                local author = value.ID
-                local addonName = value.addonName
-                local isBiaoGe = value.isBiaoGe
-                for _, v in ipairs(ZL.soundTbl2) do
-                    local soundID = v.ID
-                    local soundName = v.name
-                    if isBiaoGe then
-                        ZL["sound_" .. soundID .. author] = Interface .. author .. "\\" .. soundID
-                    else
-                        ZL["sound_" .. soundID .. author] = format("Interface\\AddOns\\%s\\sound\\%s", addonName, soundName)
-                    end
-                end
-            end
-
-            local yes
-            for i, v in ipairs(ZL.soundAuthor) do
-                if ZongLan.options.Sound == v.ID then
-                    yes = true
-                end
-            end
-            if not yes then
-                ZongLan.options.Sound = "AI"
-            end
-        end
-
-        ZL.Init2(function()
-            DefaultSound()
-        end)
     end
 
     ZL.classColorNames = {}
@@ -288,10 +229,10 @@ ZL.Init(function()
     if not ZongLan.point then
         ZongLan.point = {}
     end
-
     if not ZongLan.options then
         ZongLan.options = {}
     end
+
     if ZongLan.options.bagViewerShowBag == nil then
         ZongLan.options.bagViewerShowBag = true
     end
@@ -308,18 +249,19 @@ ZL.Init(function()
         ZongLan.realmName = ZongLan.realmName or {}
         ZongLan.realmName[realmID] = realmName
     end
+
     -- 记录每个角色的职业、等级、天赋
     do
         ZongLan.playerInfo = ZongLan.playerInfo or {}
         ZongLan.playerInfo[realmID] = ZongLan.playerInfo[realmID] or {}
-        ZongLan.playerInfo[realmID][player] = ZongLan.playerInfo[realmID][player] or {}
-        ZongLan.playerInfo[realmID][player].class = select(2, UnitClass("player"))
-        ZongLan.playerInfo[realmID][player].raceID = select(3, UnitRace("player"))
-        ZongLan.playerInfo[realmID][player].faction = UnitFactionGroup("player")
-        ZongLan.playerInfo[realmID][player].iLevel = select(2, GetAverageItemLevel()) or 0
+        ZongLan.playerInfo[realmID][ZL.myName] = ZongLan.playerInfo[realmID][ZL.myName] or {}
+        ZongLan.playerInfo[realmID][ZL.myName].class = select(2, UnitClass("player"))
+        ZongLan.playerInfo[realmID][ZL.myName].raceID = select(3, UnitRace("player"))
+        ZongLan.playerInfo[realmID][ZL.myName].faction = UnitFactionGroup("player")
+        ZongLan.playerInfo[realmID][ZL.myName].iLevel = select(2, GetAverageItemLevel()) or 0
 
         local function UpdateLevel(level)
-            ZongLan.playerInfo[realmID][player].level = level
+            ZongLan.playerInfo[realmID][ZL.myName].level = level
             ZL.isFullLevel = level >= ZL.fullLevel
         end
         UpdateLevel(UnitLevel("player"))
@@ -330,13 +272,14 @@ ZL.Init(function()
             end
         end)
     end
+    
     -- 天赋
     do
         local GetTalent
         if ZL.IsForever then
             GetTalent = function(_, event)
                 if not (C_Traits and C_Traits.GetConfigInfo and C_Traits.GetGroupDisplayInfoByTreeID and C_Traits.GetGroupCurrencyInfo) then
-                    ZongLan.playerInfo[realmID][player].talent = nil
+                    ZongLan.playerInfo[realmID][ZL.myName].talent = nil
                     return
                 end
 
@@ -347,7 +290,7 @@ ZL.Init(function()
 
                 local configInfo = configID and C_Traits.GetConfigInfo(configID)
                 if not configInfo or not configInfo.treeIDs then
-                    ZongLan.playerInfo[realmID][player].talent = nil
+                    ZongLan.playerInfo[realmID][ZL.myName].talent = nil
                     return
                 end
 
@@ -388,7 +331,7 @@ ZL.Init(function()
                 if not maxPoints or maxPoints == 0 then
                     specIndex = nil
                 end
-                ZongLan.playerInfo[realmID][player].talent = specIndex
+                ZongLan.playerInfo[realmID][ZL.myName].talent = specIndex
             end
         elseif ZL.verOver4 then
             GetTalent = function(_, event)
@@ -396,7 +339,7 @@ ZL.Init(function()
                 if specIndex == 0 or specIndex == 5 then
                     specIndex = nil
                 end
-                ZongLan.playerInfo[realmID][player].talent = specIndex
+                ZongLan.playerInfo[realmID][ZL.myName].talent = specIndex
             end
         else
             GetTalent = function(_, event)
@@ -410,7 +353,7 @@ ZL.Init(function()
                     end
                 end
                 if maxNum == 0 then specIndex = nil end
-                ZongLan.playerInfo[realmID][player].talent = specIndex
+                ZongLan.playerInfo[realmID][ZL.myName].talent = specIndex
             end
         end
 

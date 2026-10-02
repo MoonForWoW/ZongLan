@@ -9,7 +9,6 @@ local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
 local realmID = GetRealmID()
 local selectedRealmID = realmID
-local player = ZL.playerName
 local class = select(2, UnitClass("player"))
 local MONEY = "MONEY"
 
@@ -284,18 +283,18 @@ local function AddCurrentPlayer(tbl, saveClass, sortRealmID)
     sortRealmID = sortRealmID or selectedRealmID
     if sortRealmID ~= realmID then return end
     for _, v in ipairs(tbl) do
-        if v.player == player then
+        if v.player == ZL.myName then
             return
         end
     end
     local classColor = class and select(4, GetClassColor(class))
-    local playerInfo = ZongLan.playerInfo and ZongLan.playerInfo[realmID] and ZongLan.playerInfo[realmID][player]
+    local playerInfo = ZongLan.playerInfo and ZongLan.playerInfo[realmID] and ZongLan.playerInfo[realmID][ZL.myName]
     local iLevel = playerInfo and playerInfo.iLevel or
-        (ZongLan.PlayerItemsLevel and ZongLan.PlayerItemsLevel[realmID] and ZongLan.PlayerItemsLevel[realmID][player])
+        (ZongLan.PlayerItemsLevel and ZongLan.PlayerItemsLevel[realmID] and ZongLan.PlayerItemsLevel[realmID][ZL.myName])
     if classColor and iLevel then
         tinsert(tbl, {
-            player = player,
-            colorplayer = "|c" .. classColor .. player,
+            player = ZL.myName,
+            colorplayer = "|c" .. classColor .. ZL.myName,
             class = saveClass and class or nil,
             talent = playerInfo and playerInfo.talent,
             iLevel = iLevel,
@@ -441,7 +440,7 @@ function ZL.CreateRoleOverviewSortFrame(bt, update)
     GetDB(selectedRealmID)
     local sortDB = GetSortDB(selectedRealmID)
     local isFirstCustomSort = not next(sortDB)
-        or (selectedRealmID == realmID and #sortDB == 1 and sortDB[1].player == player)
+        or (selectedRealmID == realmID and #sortDB == 1 and sortDB[1].player == ZL.myName)
     if next(sortDB) then
         for _, oldInfo in ipairs(sortDB) do
             oldInfo.no = true

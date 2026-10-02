@@ -20,7 +20,6 @@ local Round = ns.Round
 
 local pt = print
 
-local player = ZL.playerName
 local realmID = GetRealmID()
 
 local FBCD = "RaidCD"
@@ -70,7 +69,7 @@ ZL.RoleOverviewCustomItemsInfo = {
 ZL.Init(function()
     -- 获取副本CD
     do
-        local colorplayer = SetClassCFF(player, "player")
+        local colorplayer = SetClassCFF(ZL.myName, "player")
 
         function ZL.UpdateFBCD()
             local time = GetServerTime()
@@ -92,7 +91,7 @@ ZL.Init(function()
                         end
                     end
                     local a = {
-                        player = player,
+                        player = ZL.myName,
                         colorplayer = colorplayer,
                         fbId = instanceId,
                         num = maxPlayers,
@@ -111,7 +110,7 @@ ZL.Init(function()
                     local name, bossID, resettime = GetSavedWorldBossInfo(i)
                     if bossID then
                         local a = {
-                            player = player,
+                            player = ZL.myName,
                             colorplayer = colorplayer,
                             fbId = bossID,
                             num = 0,
@@ -124,11 +123,11 @@ ZL.Init(function()
                 end
             end
             if next(cd) then
-                ZongLan[FBCD][realmID][player] = cd
+                ZongLan[FBCD][realmID][ZL.myName] = cd
             else
-                ZongLan[FBCD][realmID][player] = {
+                ZongLan[FBCD][realmID][ZL.myName] = {
                     {
-                        player = player,
+                        player = ZL.myName,
                         colorplayer = colorplayer,
                     }
                 }
@@ -144,7 +143,7 @@ ZL.Init(function()
                                 tinsert(playerList, _player)
                             end
                             for _, _player in ipairs(playerList) do
-                                if _player ~= player then
+                                if _player ~= ZL.myName then
                                     local yes
                                     local player0, colorplayer0
                                     for i = #_G[db][FBCD][realmID][_player], 1, -1 do
@@ -229,7 +228,7 @@ ZL.Init(function()
     -- 世界BOSS（MOP）
     ZongLan.worldBossCD = ZongLan.worldBossCD or {}
     ZongLan.worldBossCD[realmID] = ZongLan.worldBossCD[realmID] or {}
-    ZongLan.worldBossCD[realmID][player] = ZongLan.worldBossCD[realmID][player] or {}
+    ZongLan.worldBossCD[realmID][ZL.myName] = ZongLan.worldBossCD[realmID][ZL.myName] or {}
     if ZL.IsMOP then
         local function SaveWorldBoss(bossIndex)
             local resetDay = 2
@@ -266,10 +265,10 @@ ZL.Init(function()
             local secondsToNextThursday = nextThursdayTimestamp - currentTimestamp -- 距离下周四还有多少秒
             local timestamp = currentTimestamp + secondsToNextThursday             -- 到下周四的实际时间戳
 
-            local colorplayer = SetClassCFF(player, "player")
-            ZongLan.worldBossCD[realmID][player]["worldBoss" .. bossIndex] = {
+            local colorplayer = SetClassCFF(ZL.myName, "player")
+            ZongLan.worldBossCD[realmID][ZL.myName]["worldBoss" .. bossIndex] = {
                 name = "worldBoss" .. bossIndex,
-                player = player,
+                player = ZL.myName,
                 colorplayer = colorplayer,
                 resettime = secondsToNextThursday,
                 endtime = timestamp
@@ -280,11 +279,11 @@ ZL.Init(function()
             if InCombatLockdown() then return end
             for bossIndex, questID in ipairs(ZL.worldBossID) do
                 if C_QuestLog.IsQuestFlaggedCompleted(questID) then
-                    if not ZongLan.worldBossCD[realmID][player]["worldBoss" .. bossIndex] then
+                    if not ZongLan.worldBossCD[realmID][ZL.myName]["worldBoss" .. bossIndex] then
                         SaveWorldBoss(bossIndex)
                     end
                 else
-                    ZongLan.worldBossCD[realmID][player]["worldBoss" .. bossIndex] = nil
+                    ZongLan.worldBossCD[realmID][ZL.myName]["worldBoss" .. bossIndex] = nil
                 end
             end
         end
@@ -343,10 +342,10 @@ ZL.Init(function()
     do
         ZongLan.QuestCD = ZongLan.QuestCD or {}
         ZongLan.QuestCD[realmID] = ZongLan.QuestCD[realmID] or {}
-        ZongLan.QuestCD[realmID][player] = ZongLan.QuestCD[realmID][player] or {}
+        ZongLan.QuestCD[realmID][ZL.myName] = ZongLan.QuestCD[realmID][ZL.myName] or {}
 
         local function IsLearnSkill(skillID)
-            return ZongLan[MONEY][realmID][player].skill[skillID]
+            return ZongLan[MONEY][realmID][ZL.myName].skill[skillID]
         end
 
         local function GetQuestSkillID(questName)
@@ -405,10 +404,10 @@ ZL.Init(function()
             local secondsUntilNext7am = ZL.GetNextDayTime()
             local timestamp = currentTimestamp + secondsUntilNext7am
 
-            local colorplayer = SetClassCFF(player, "player")
-            ZongLan.QuestCD[realmID][player][questName] = {
+            local colorplayer = SetClassCFF(ZL.myName, "player")
+            ZongLan.QuestCD[realmID][ZL.myName][questName] = {
                 name = questName,
-                player = player,
+                player = ZL.myName,
                 colorplayer = colorplayer,
                 questID = questID,
                 resettime = secondsUntilNext7am,
@@ -434,7 +433,7 @@ ZL.Init(function()
             if count > 0 then
                 SaveDayQuest('dayQuestCount', nil, count)
             else
-                ZongLan.QuestCD[realmID][player].dayQuestCount = nil
+                ZongLan.QuestCD[realmID][ZL.myName].dayQuestCount = nil
             end
         end
 
@@ -457,10 +456,10 @@ ZL.Init(function()
             local secondsToNextThursday = ZL.GetNextWeekTime()         -- 距离下周四还有多少秒
             local timestamp = currentTimestamp + secondsToNextThursday -- 到下周四的实际时间戳
 
-            local colorplayer = SetClassCFF(player, "player")
-            ZongLan.QuestCD[realmID][player][questName] = {
+            local colorplayer = SetClassCFF(ZL.myName, "player")
+            ZongLan.QuestCD[realmID][ZL.myName][questName] = {
                 name = questName,
-                player = player,
+                player = ZL.myName,
                 colorplayer = colorplayer,
                 questID = questID,
                 resettime = secondsToNextThursday,
@@ -590,10 +589,10 @@ ZL.Init(function()
         local function CheckQuestsCompleted()
             if ZL.dayQuests then
                 for questName, v in pairs(ZL.dayQuests) do
-                    if not ZongLan.QuestCD[realmID][player][questName] then
+                    if not ZongLan.QuestCD[realmID][ZL.myName][questName] then
                         local skillID = v.skillID
                         if skillID and IsLearnSkill(skillID) then
-                            ZongLan.QuestCD[realmID][player][questName] = {
+                            ZongLan.QuestCD[realmID][ZL.myName][questName] = {
                                 notFinish = true,
                             }
                         end
@@ -648,7 +647,7 @@ ZL.Init(function()
         local function UpdateLegendaryCloak()
             for i, v in ipairs(ids) do
                 if C_QuestLog.IsQuestFlaggedCompleted(v.id) then
-                    db[player] = v.name
+                    db[ZL.myName] = v.name
                 end
             end
         end
@@ -664,101 +663,13 @@ ZL.Init(function()
         end)
     end
 
-    -- 时光服随机本金币惩罚
-    ZongLan.buffCD = ZongLan.buffCD or {}
-    ZongLan.buffCD[realmID] = ZongLan.buffCD[realmID] or {}
-    ZongLan.buffCD[realmID][player] = ZongLan.buffCD[realmID][player] or {}
-    if ZL.IsTitan then
-        local buffIDs = { { id = 1284288, type = "HARMFUL" } }
-
-        local function UpdateBuffRecord()
-            for i, v in ipairs(buffIDs) do
-                local buffID = v.id
-                ZongLan.buffCD[realmID][player][buffID] = nil
-                for i = 1, 60 do
-                    local name, icon, count, dispelType, duration, expirationTime, source,
-                    isStealable, nameplateShowPersonal, spellID = UnitAura("player", i, v.type)
-                    if not spellID then break end
-                    if buffID == spellID then
-                        local cooldown = expirationTime - GetTime()
-                        local currentTimestamp = GetServerTime()
-                        local secondsUntilNext7am = ZL.GetNextDayTime()
-                        local nextDayEndTime = currentTimestamp + secondsUntilNext7am
-                        ZongLan.buffCD[realmID][player][buffID] = {
-                            resettime = cooldown,
-                            endtime = cooldown + currentTimestamp,
-                            nextDayEndTime = nextDayEndTime,
-                        }
-                        break
-                    end
-                end
-            end
-        end
-
-        function ZL.UpdateBuffCD()
-            local time = GetServerTime()
-            local buffIDs = {}
-            for buffID in pairs(ZongLan.buffCD[realmID][player]) do
-                tinsert(buffIDs, buffID)
-            end
-            for _, buffID in pairs(buffIDs) do
-                local v = ZongLan.buffCD[realmID][player][buffID]
-                if v and v.endtime then
-                    if time >= v.endtime then
-                        ZongLan.buffCD[realmID][player][buffID] = nil
-                    elseif time < v.endtime then
-                        v.resettime = v.endtime - time
-                    end
-                end
-            end
-        end
-
-        local function UpdateBuffEndTime()
-            local time = GetServerTime()
-            for _, db in pairs(dbNames) do
-                if _G[db] and _G[db].buffCD then
-                    for realmID in pairs(_G[db].buffCD) do
-                        if type(realmID) == "number" and type(_G[db].buffCD[realmID]) == "table" then
-                            for player in pairs(_G[db].buffCD[realmID]) do
-                                local buffIDs = {}
-                                for buffID in pairs(_G[db].buffCD[realmID][player]) do
-                                    tinsert(buffIDs, buffID)
-                                end
-                                for _, buffID in pairs(buffIDs) do
-                                    local v = _G[db].buffCD[realmID][player][buffID]
-                                    if v and v.nextDayEndTime and time > v.nextDayEndTime then
-                                        _G[db].buffCD[realmID][player][buffID] = nil
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        ZL.RegisterEvent("UNIT_AURA", function(_, _, unit, info)
-            if unit == "player" then
-                UpdateBuffRecord()
-            end
-        end)
-
-        ZL.Init2(function()
-            UpdateBuffEndTime()
-            ZL.UpdateBuffCD()
-            ZL.After(5, UpdateBuffRecord)
-        end)
-
-        C_Timer.NewTicker(10, function()
-            ZL.UpdateBuffCD()
-        end)
-    end
+    ZongLan.buffCD = nil
 
     -- 专业技能CD
     if not ZL.IsNewUI then
         ZongLan.tradeSkillCooldown = ZongLan.tradeSkillCooldown or {}
         ZongLan.tradeSkillCooldown[realmID] = ZongLan.tradeSkillCooldown[realmID] or {}
-        ZongLan.tradeSkillCooldown[realmID][player] = ZongLan.tradeSkillCooldown[realmID][player] or {}
+        ZongLan.tradeSkillCooldown[realmID][ZL.myName] = ZongLan.tradeSkillCooldown[realmID][ZL.myName] or {}
 
         local tbl = {}
         if ZL.IsVanilla then
@@ -937,7 +848,7 @@ ZL.Init(function()
                     if ZL.IsMOP then
                         cooldown = ZL.GetNextDayTime()
                     end
-                    ZongLan.tradeSkillCooldown[realmID][player][profession] = {
+                    ZongLan.tradeSkillCooldown[realmID][ZL.myName][profession] = {
                         class = select(2, UnitClass("player")),
                         resettime = cooldown,
                         endtime = cooldown + time,
@@ -990,11 +901,7 @@ ZL.Init(function()
                                                 local msg = ZL.STC_g1(format(L["%s：%s已就绪！"], colorName, tbl[profession].name))
                                                 ZL.After(delay, function()
                                                     ZL.SendSystemMessage(msg)
-                                                    if ZL["sound_" .. profession .. "Ready" .. ZongLan.options.Sound] then
-                                                        ZL.PlaySound(profession .. "Ready")
-                                                    else
-                                                        PlaySoundFile(ns.Interface .. "Media\\sound\\other\\done.mp3", "Master")
-                                                    end
+                                                    PlaySoundFile(ns.Interface .. "Media\\sound\\other\\done.mp3", "Master")
                                                 end)
                                                 delay = delay + 3
                                             end
@@ -1022,7 +929,7 @@ ZL.Init(function()
                         end
                     end
                     if not isLearned then
-                        ZongLan.tradeSkillCooldown[realmID][player][profession] = nil
+                        ZongLan.tradeSkillCooldown[realmID][ZL.myName][profession] = nil
                     end
                 end
             end
@@ -1078,7 +985,7 @@ ZL.Init(function()
                         }
                     end
                 end
-                ZongLan[MONEY][realmID][player].skill = tbl
+                ZongLan[MONEY][realmID][ZL.myName].skill = tbl
             else
                 if SkillFrame and SkillFrame:IsVisible() then return end
                 if WardrobeFrame and WardrobeFrame:IsVisible() then return end
@@ -1097,7 +1004,7 @@ ZL.Init(function()
                         }
                     end
                 end
-                ZongLan[MONEY][realmID][player].skill = tbl
+                ZongLan[MONEY][realmID][ZL.myName].skill = tbl
             end
         end
 
@@ -1116,10 +1023,9 @@ ZL.Init(function()
     do
         function ZL.MONEYupdate()
             local tbl = {}
-            local player = ZL.playerName
-            tbl.player = player
-            tbl.colorplayer = SetClassCFF(player, "player")
-            tbl.skill = ZongLan[MONEY][realmID][player].skill
+            tbl.player = ZL.myName
+            tbl.colorplayer = SetClassCFF(ZL.myName, "player")
+            tbl.skill = ZongLan[MONEY][realmID][ZL.myName].skill
             for i, v in ipairs(ZL.MONEYall_table) do
                 if v.type == "money" then
                     tbl.money = floor(GetMoney() / 1e4)
@@ -1169,7 +1075,7 @@ ZL.Init(function()
                     end
                     tbl[v.id] = { count = count, tex = tex, isItem = true, quest = questsCompleted, }
                 elseif v.type == "xp" then
-                    tbl.xp = ZongLan[MONEY][realmID][player].xp
+                    tbl.xp = ZongLan[MONEY][realmID][ZL.myName].xp
                 elseif v.type ~= "equip" and C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo then
                     local info = C_CurrencyInfo.GetCurrencyInfo(v.id)
                     if info then
@@ -1206,7 +1112,7 @@ ZL.Init(function()
                     end
                 end
             end
-            ZongLan[MONEY][realmID][player] = tbl
+            ZongLan[MONEY][realmID][ZL.myName] = tbl
         end
 
         local function UpdateCD()
@@ -1256,7 +1162,7 @@ ZL.Init(function()
                 local maxXP = UnitXPMax("player")
                 per = exhaustion / maxXP * 100
             end
-            ZongLan[MONEY][realmID][player].xp = {
+            ZongLan[MONEY][realmID][ZL.myName].xp = {
                 per = format("%.1f", per),
                 perNow = format("%d", per),
                 time = GetServerTime(),
@@ -1298,7 +1204,7 @@ ZL.Init(function()
     do
         ZongLan.equip = ZongLan.equip or {}
         ZongLan.equip[realmID] = ZongLan.equip[realmID] or {}
-        ZongLan.equip[realmID][player] = ZongLan.equip[realmID][player] or {}
+        ZongLan.equip[realmID][ZL.myName] = ZongLan.equip[realmID][ZL.myName] or {}
 
         local ItemLevelPattern = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
         local function GetItemLevelByTooltip(slot, link)
@@ -1319,7 +1225,7 @@ ZL.Init(function()
         end
 
         function ZL.GetPlayerEquip()
-            local tbl = ZongLan.equip[realmID][player]
+            local tbl = ZongLan.equip[realmID][ZL.myName]
             wipe(tbl)
             for slot = 1, 19 do
                 local link = GetInventoryItemLink("player", slot)
@@ -1345,7 +1251,7 @@ ZL.Init(function()
 
         local function GetPlayerAverageItemLevel()
             local _, avgLevel = GetAverageItemLevel()
-            ZongLan.playerInfo[realmID][player].iLevel = avgLevel or 0
+            ZongLan.playerInfo[realmID][ZL.myName].iLevel = avgLevel or 0
         end
 
         local delay
@@ -1386,13 +1292,13 @@ ZL.Init(function()
     do
         ZongLan.bag = ZongLan.bag or {}
         ZongLan.bag[realmID] = ZongLan.bag[realmID] or {}
-        ZongLan.bag[realmID][player] = ZongLan.bag[realmID][player] or {}
-        ZongLan.bag[realmID][player].bag = ZongLan.bag[realmID][player].bag or {}
-        ZongLan.bag[realmID][player].bagKey = ZongLan.bag[realmID][player].bagKey or {}
-        ZongLan.bag[realmID][player].bank = ZongLan.bag[realmID][player].bank or {}
-        ZongLan.bag[realmID][player].bagLink = ZongLan.bag[realmID][player].bagLink or {}
-        ZongLan.bag[realmID][player].bagKeyLink = ZongLan.bag[realmID][player].bagKeyLink or {}
-        ZongLan.bag[realmID][player].bankLink = ZongLan.bag[realmID][player].bankLink or {}
+        ZongLan.bag[realmID][ZL.myName] = ZongLan.bag[realmID][ZL.myName] or {}
+        ZongLan.bag[realmID][ZL.myName].bag = ZongLan.bag[realmID][ZL.myName].bag or {}
+        ZongLan.bag[realmID][ZL.myName].bagKey = ZongLan.bag[realmID][ZL.myName].bagKey or {}
+        ZongLan.bag[realmID][ZL.myName].bank = ZongLan.bag[realmID][ZL.myName].bank or {}
+        ZongLan.bag[realmID][ZL.myName].bagLink = ZongLan.bag[realmID][ZL.myName].bagLink or {}
+        ZongLan.bag[realmID][ZL.myName].bagKeyLink = ZongLan.bag[realmID][ZL.myName].bagKeyLink or {}
+        ZongLan.bag[realmID][ZL.myName].bankLink = ZongLan.bag[realmID][ZL.myName].bankLink or {}
 
         local function GetBagSlots(bagType)
             if bagType == "bag" then
@@ -1414,18 +1320,18 @@ ZL.Init(function()
             for slot = 1, C_Container.GetContainerNumSlots(bag) do
                 local info = C_Container.GetContainerItemInfo(bag, slot)
                 if info then
-                    ZongLan.bag[realmID][player][bagType][info.itemID] =
-                        (ZongLan.bag[realmID][player][bagType][info.itemID] or 0) + info.stackCount
+                    ZongLan.bag[realmID][ZL.myName][bagType][info.itemID] =
+                        (ZongLan.bag[realmID][ZL.myName][bagType][info.itemID] or 0) + info.stackCount
                     local link = info.hyperlink
                     if not link and C_Container.GetContainerItemLink then
                         link = C_Container.GetContainerItemLink(bag, slot)
                     end
                     if link then
                         local linkType = bagType .. "Link"
-                        local oldInfo = ZongLan.bag[realmID][player][linkType][link]
+                        local oldInfo = ZongLan.bag[realmID][ZL.myName][linkType][link]
                         local oldCount = type(oldInfo) == "table" and oldInfo.count or tonumber(oldInfo) or 0
                         local maxStack = select(8, GetItemInfo(link))
-                        ZongLan.bag[realmID][player][linkType][link] = {
+                        ZongLan.bag[realmID][ZL.myName][linkType][link] = {
                             count = oldCount + info.stackCount,
                             stackable = (type(oldInfo) == "table" and oldInfo.stackable)
                                 or info.stackCount > 1 or (maxStack and maxStack > 1) or nil,
@@ -1436,10 +1342,10 @@ ZL.Init(function()
         end
 
         function ZL.SaveBag()
-            wipe(ZongLan.bag[realmID][player].bag)
-            wipe(ZongLan.bag[realmID][player].bagKey)
-            wipe(ZongLan.bag[realmID][player].bagLink)
-            wipe(ZongLan.bag[realmID][player].bagKeyLink)
+            wipe(ZongLan.bag[realmID][ZL.myName].bag)
+            wipe(ZongLan.bag[realmID][ZL.myName].bagKey)
+            wipe(ZongLan.bag[realmID][ZL.myName].bagLink)
+            wipe(ZongLan.bag[realmID][ZL.myName].bagKeyLink)
             local startBag, endBag = GetBagSlots("bag")
             for bag = startBag, endBag do
                 SaveFromBagNum(bag, "bag")
@@ -1450,8 +1356,8 @@ ZL.Init(function()
         function ZL.SaveBank()
             if ZL.IsNewUI then return end
             if not ZL.bankIsOpen then return end
-            wipe(ZongLan.bag[realmID][player].bank)
-            wipe(ZongLan.bag[realmID][player].bankLink)
+            wipe(ZongLan.bag[realmID][ZL.myName].bank)
+            wipe(ZongLan.bag[realmID][ZL.myName].bankLink)
             local startBag, endBag = GetBagSlots("bank")
             for bag = startBag, endBag do
                 SaveFromBagNum(bag, "bank")
@@ -1480,7 +1386,7 @@ ZL.Init(function()
 
     -- 声望
     if not ZL.IsRetail then
-        ZongLan.bag[realmID][player].faction = ZongLan.bag[realmID][player].faction or {}
+        ZongLan.bag[realmID][ZL.myName].faction = ZongLan.bag[realmID][ZL.myName].faction or {}
 
 		local function SaveReputation()
 			for _, factionID in ipairs(ZL.factionTbl) do
@@ -1498,7 +1404,7 @@ ZL.Init(function()
 					name, _, standingID, barMin, barMax, barValue = GetFactionInfoByID(factionID)
 				end
 				if name then
-					ZongLan.bag[realmID][player].faction[factionID] = {
+					ZongLan.bag[realmID][ZL.myName].faction[factionID] = {
                         name = name,
                         standingID = standingID,
                         currentValue = barValue - barMin,

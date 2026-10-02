@@ -20,7 +20,6 @@ local Round = ns.Round
 
 local pt = print
 
-local player = ZL.playerName
 local realmID = GetRealmID()
 
 local FBCD = "RaidCD"
@@ -32,7 +31,7 @@ ZL.Init(function()
 
     ZongLan[MONEY] = ZongLan[MONEY] or {}
     ZongLan[MONEY][realmID] = ZongLan[MONEY][realmID] or {}
-    ZongLan[MONEY][realmID][player] = ZongLan[MONEY][realmID][player] or {}
+    ZongLan[MONEY][realmID][ZL.myName] = ZongLan[MONEY][realmID][ZL.myName] or {}
 
     ZongLan.roleOverviewNote = ZongLan.roleOverviewNote or {}
     ZongLan.roleOverviewNote[realmID] = ZongLan.roleOverviewNote[realmID] or {}
@@ -999,7 +998,7 @@ GameTooltip:SetCurrencyByID(697)
             ZL.FBCDall_table = {
                 { name = 'OLforever', name2 = L['奥妮克希亚'], color = "00BFFF", fbId = 249, type = "fb" },
                 { name = 'HSforever', name2 = L['海加尔峰'], color = "00BFFF", fbId = -100, type = "fb" },
-                { name = 'BDforever', name2 = L['巴罗深渊'], color = "00BFFF", fbId = -100, type = "fb" },
+                { name = 'BDforever', name2 = L['深穴'], color = "00BFFF", fbId = -100, type = "fb" },
             }
             ZL.FBCount = #ZL.FBCDall_table
 

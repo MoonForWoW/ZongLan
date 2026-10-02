@@ -1,4 +1,4 @@
-## Interface: 11508, 11509, 20506, 30405, 38002, 40402, 50504, 50505, 120007, 120100
+## Interface: 11508, 11509, 16001, 20506, 30405, 38002, 40402, 50504, 50505, 120007, 120100
 ## Title: <ZongLan> |cff00BFFF角色总览|r
 ## Title-zhTW: <ZongLan> |cff00BFFF角色總覽|r
 ## Title-enUS: <ZongLan> |cff00BFFFCharacter Overview|r
@@ -7,7 +7,7 @@
 ## Notes-enUS: Multi-character information overview. Commands: /zl or /zonglan
 ## IconTexture: Interface\AddOns\ZongLan\Media\icon\icon.png
 ## Author: 苍穹之霜
-## Version: 1.0.4
+## Version: 1.0.5
 ## SavedVariables: ZongLan
 
 Locales\Locales.lua

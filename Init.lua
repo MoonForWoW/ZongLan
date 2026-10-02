@@ -15,6 +15,9 @@ end
 if not GetItemCount then
     GetItemCount = C_Item.GetItemCount
 end
+if not GetItemSetInfo then
+    GetItemSetInfo = C_Item.GetItemSetInfo
+end
 
 local pt = print
 
@@ -66,18 +69,17 @@ ns.ClassQuest = ClassQuest
 
 -- 注册事件
 do
-    local addonLoadedFuncs = {}
+    local loginFuncs = {}
     local f = CreateFrame("Frame")
-    f:RegisterEvent("ADDON_LOADED")
-    f:SetScript("OnEvent", function(self, event, addonName)
-        if addonName ~= AddonName then return end
-        self:UnregisterEvent("ADDON_LOADED")
-        for _, func in ipairs(addonLoadedFuncs) do
+    f:RegisterEvent("PLAYER_LOGIN")
+    f:SetScript("OnEvent", function(self, event)
+        self:UnregisterEvent("PLAYER_LOGIN")
+        for _, func in ipairs(loginFuncs) do
             securecall(func)
         end
     end)
     function ZL.Init(func)
-        tinsert(addonLoadedFuncs, func)
+        tinsert(loginFuncs, func)
     end
 
     local enterWorldFuncs = {}
@@ -91,19 +93,6 @@ do
     end)
     function ZL.Init2(func)
         tinsert(enterWorldFuncs, func)
-    end
-
-    local loginFuncs = {}
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("PLAYER_LOGIN")
-    f:SetScript("OnEvent", function(self, event)
-        self:UnregisterEvent("PLAYER_LOGIN")
-        for _, func in ipairs(loginFuncs) do
-            securecall(func)
-        end
-    end)
-    function ZL.Init3(func)
-        tinsert(loginFuncs, func)
     end
 
     local events = {}
@@ -240,7 +229,9 @@ function ZL.GN(unit)
     return GetUnitName(unit, true)
 end
 
-ZL.playerName = ZL.GN()
+ZL.Init(function ()
+    ZL.myName = ZL.GN()
+end)
 ZL.realmName = GetRealmName():gsub(" ", ""):gsub("%-", "")
 ZL.realmID = GetRealmID()
 

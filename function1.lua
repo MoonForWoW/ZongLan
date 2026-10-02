@@ -12,7 +12,6 @@ local RGB = ns.RGB
 
 local pt = print
 local RealmID = GetRealmID()
-local player = ZL.playerName
 ZL.After = C_Timer.After
 
 ------------------函数：四舍五入------------------ 数字，小数点数
@@ -221,23 +220,12 @@ end
 
 ------------------按键声音------------------
 function ZL.PlaySound(id)
-    if ZongLan.options['buttonSound'] == 1 and type(id) == "number" then
+    if type(id) == "number" then
         if ZL["sound" .. id] then
             if id == 2 then
                 PlaySoundFile(ZL["sound" .. id])
             else
                 PlaySound(ZL["sound" .. id])
-            end
-        end
-    elseif ZongLan.options['tipsSound'] == 1 and type(id) == "string" then
-        if ZL["sound_" .. id .. ZongLan.options.Sound] then
-            if not PlaySoundFile(ZL["sound_" .. id .. ZongLan.options.Sound] .. ".mp3", "Master") then
-                if not PlaySoundFile(ZL["sound_" .. id .. ZongLan.options.Sound] .. ".ogg", "Master") then
-                    if ZL["sound_" .. id .. "AI"] then
-                        PlaySoundFile(ZL["sound_" .. id .. "AI"] .. ".mp3", "Master")
-                        PlaySoundFile(ZL["sound_" .. id .. "AI"] .. ".ogg", "Master")
-                    end
-                end
             end
         end
     end
@@ -504,7 +492,7 @@ function ZL.OnLeaveDelay(self, func)
 end
 
 function ZL.IsMe(realmID, player)
-    return realmID == ZL.realmID and player == ZL.playerName
+    return realmID == ZL.realmID and player == ZL.myName
 end
 
 function ZL.GetNextWeekTime() -- 距离下周四还有多少秒

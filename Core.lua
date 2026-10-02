@@ -20,7 +20,6 @@ local Round = ns.Round
 
 local pt = print
 
-local player = ZL.playerName
 local realmID = GetRealmID()
 
 local FBCD = "RaidCD"
@@ -65,7 +64,7 @@ local function IsRoleOverviewAccountPlayer(accountName, realmID, player)
 end
 
 local function IsCurrentRoleOverviewAccount(accountName)
-    return accountName and IsRoleOverviewAccountPlayer(accountName, realmID, player)
+    return accountName and IsRoleOverviewAccountPlayer(accountName, realmID, ZL.myName)
 end
 
 local function GetFactionColor(faction, isNewUI, r, g, b)

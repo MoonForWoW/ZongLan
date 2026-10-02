@@ -228,6 +228,7 @@ ZL.Init(function()
                     end)
                     button:SetScript("OnLeave", GameTooltip_Hide)
                     button:SetScript("OnClick", function()
+                        ZL.PlaySound(1)
                         if mainFrame.click and mainFrame.realmID and mainFrame.player and toggleFunc then
                             toggleFunc(mainFrame, mainFrame.isAccounts, mainFrame.realmID, mainFrame.player,
                                 mainFrame.colorplayer, mainFrame.class)

@@ -117,9 +117,7 @@ local function CreateMainIcon()
     frame:SetWidth(texture:GetWidth() + text:GetStringWidth())
 end
 
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("PLAYER_LOGIN")
-frame:SetScript("OnEvent", function()
+ZL.Init(function()
     ZongLan.options.mainIcon = ZongLan.options.mainIcon or 0
     ZongLan.options.mainIconScale = tonumber(ZongLan.options.mainIconScale) or 1
     ZongLan.options.mainIconFrameLevel = ZongLan.options.mainIconFrameLevel or "HIGH"
@@ -129,6 +127,7 @@ frame:SetScript("OnEvent", function()
     if not icon then return end
     ZongLan.minimap = ZongLan.minimap or {}
     ZongLan.minimap.hide = ZongLan.options.miniMap == 0
+    ZongLan.minimap.minimapPos = ZongLan.minimap.minimapPos or 185
     icon:Register(AddonName, plugin, ZongLan.minimap)
     ZL.MinimapIcon = icon
 end)

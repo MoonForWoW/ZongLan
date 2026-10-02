@@ -18,7 +18,6 @@ local GetItemID     = ns.GetItemID
 local Maxb          = ns.Maxb
 local Round         = ns.Round
 
-local player        = ZL.playerName
 local realmID       = GetRealmID()
 
 local pt            = print
@@ -1934,9 +1933,8 @@ ZL.Init(function()
         -- 删除角色
         local function DeletePlayerData()
             local realmID = GetRealmID()
-            local player = ZL.playerName
             ZL.DeletePlayerData(choose.realmID, choose.player)
-            if realmID == choose.realmID and player == choose.player then
+            if realmID == choose.realmID and ZL.myName == choose.player then
                 ReloadUI()
             else
                 UpdateAllButtons()
