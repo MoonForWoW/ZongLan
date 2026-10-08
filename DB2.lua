@@ -85,8 +85,9 @@ ZL.Init(function()
             ZongLan.FBCDchoice["week1"] = 1
             ZongLan.FBCDchoice["faction1156"] = 1
         elseif ZL.IsTitan then
-            ZongLan.FBCDchoice["SWtitan"] = 1
-            ZongLan.FBCDchoice["ZAtitan"] = 1
+            -- ZongLan.FBCDchoice.ULDtitan = 1
+            -- ZongLan.FBCDchoice["SWtitan"] = 1
+            -- ZongLan.FBCDchoice["ZAtitan"] = 1
             ZongLan.FBCDchoice.TOCtitan = 1
             ZongLan.FBCDchoice.ZUGtitan = 1
             ZongLan.FBCDchoice.NAXXtitan = 1
@@ -96,7 +97,7 @@ ZL.Init(function()
             ZongLan.FBCDchoice.TKtitan = 0
             ZongLan.FBCDchoice.Doomwalker = 0
             ZongLan.FBCDchoice.DoomLordKazzak = 0
-            ZongLan.FBCDchoice["MCtitan"] = 1
+            ZongLan.FBCDchoice["MCtitan"] = 0
             ZongLan.FBCDchoice["VOAtitan"] = 1
             ZongLan.FBCDchoice["gamma"] = 1
             ZongLan.FBCDchoice["heroe"] = 1
@@ -276,6 +277,9 @@ ZL.Init(function()
                 ZongLan.FBCDchoice["SWtitan"] = 1
                 ZongLan.FBCDchoice["ZAtitan"] = 1
             end)
+            ZL.Once("FBCDchoice", 261007, function()
+                ZongLan.FBCDchoice["ULDtitan"] = 1
+            end)
         elseif ZL.IsCTM then
         elseif ZL.IsMOP then
             ZL.Once("FBCDchoice", 260802, function()
@@ -376,15 +380,21 @@ ZL.Init(function()
                 17142, 269677, 269675, 269672, 269679, 269676, 269680, 269674, -- 橙匕
                 272955,                                                        -- [艾瑞达之心]
             },
-            { 34334, },                                                        -- 橙弓
+            { 34334, 269842, 269845, 269846, 269847, 269848, 269849, },        -- 橙弓
+            {
+                46017, 270182, 270183, 270184, 270185, 270186,                 -- 奶橙锤
+                287189, 287184, 287185, 287186, 287187, 287188,                -- 物理橙锤
+                45038,                                                         -- 片
+            },
         }
         ids_updateItem = {
             -- 10938, 10939, 29223, 264272, 2131, -- 测试
-            265340, 265524, 267339, 269664, -- 橙脖
-            265335, 265523, 267338, 269667, -- 橙锤
-            265526, 267335, 269669,         -- 风剑
-            267340, 269665,                 -- 橙杖
-            269670,                         -- 橙匕
+            265340, 265524, 267339, 269664, 270148, -- 橙脖
+            265335, 265523, 267338, 269667, 270157, -- 橙锤
+            265526, 267335, 269669, 270156,         -- 风剑
+            267340, 269665, 270149,                 -- 橙杖
+            269670, 270150,                         -- 橙匕
+            270158,                                 -- 橙弓
         }
     end
 
@@ -588,6 +598,7 @@ ZL.Init(function()
             }
         elseif ZL.IsTitan then
             ZL.FBCDall_table = {
+                { name = "ULDtitan", name2 = L["奥杜尔"], color = "00BFFF", fbId = 603, type = "fb" },
                 { name = "SWtitan", name2 = L["太阳井"], color = "00BFFF", fbId = 580, type = "fb" },
                 { name = "ZAtitan", name2 = L["祖阿曼"], color = "00BFFF", fbId = 568, type = "fb" },
                 { name = "TOCtitan", name2 = L["十字军"], color = "00BFFF", fbId = 649, type = "fb" },
@@ -622,7 +633,7 @@ ZL.Init(function()
                 { name = "ignore_forge_taitanjinggang", name2 = L["忽略泰坦精钢（需重载）"], color = "ADFF2F", type = "profession" },
                 { name = "ignore_tailor_bingchuanbeibao", name2 = L["忽略冰川背包（需重载）"], color = "ADFF2F", type = "profession" },
             }
-            ZL.FBCount = 15
+            ZL.FBCount = 16
             ZL.dayQuestCount = 7
             ZL.skillCount = 8
             -- 声望
@@ -1088,105 +1099,105 @@ GameTooltip:SetCurrencyByID(697)
         local presetPotionIDs, presetFlaskIDs
         if ZL.IsVanilla then
             presetPotionIDs = {
-                13442,     -- 强效怒气药水
-                13455,     -- 强效石盾药水
+                13442, -- 强效怒气药水
+                13455, -- 强效石盾药水
             }
             presetFlaskIDs = {
-                13510,     -- 泰坦合剂
-                13511,     -- 精炼智慧合剂
-                13512,     -- 超级能量合剂
-                13513,     -- 多重抗性合剂
+                13510, -- 泰坦合剂
+                13511, -- 精炼智慧合剂
+                13512, -- 超级能量合剂
+                13513, -- 多重抗性合剂
             }
         elseif ZL.IsTBC then
             presetPotionIDs = {
-                22788,     -- 烈焰菇
-                22828,     -- 疯狂力量药水
-                22837,     -- 英雄药水
-                22838,     -- 加速药水
-                22839,     -- 毁灭药水
-                22849,     -- 铁盾药水
+                22788, -- 烈焰菇
+                22828, -- 疯狂力量药水
+                22837, -- 英雄药水
+                22838, -- 加速药水
+                22839, -- 毁灭药水
+                22849, -- 铁盾药水
             }
             presetFlaskIDs = {
-                22851,     -- 强固合剂
-                22853,     -- 强效回复合剂
-                22854,     -- 无情突袭合剂
-                22861,     -- 盲目光芒合剂
-                22866,     -- 纯粹死亡合剂
-                33208,     -- 多彩奇迹合剂
+                22851, -- 强固合剂
+                22853, -- 强效回复合剂
+                22854, -- 无情突袭合剂
+                22861, -- 盲目光芒合剂
+                22866, -- 纯粹死亡合剂
+                33208, -- 多彩奇迹合剂
             }
         elseif ZL.IsTitan then
             presetPotionIDs = {
-                40211,     -- 速度药水
-                40212,     -- 狂野魔法药水
-                40093,     -- 不灭药水
-                20007,     -- 狂野魔精药水
+                40211, -- 速度药水
+                40212, -- 狂野魔法药水
+                40093, -- 不灭药水
+                20007, -- 狂野魔精药水
             }
             presetFlaskIDs = {
-                46376,     -- 冰霜巨龙合剂
-                46377,     -- 无尽怒气合剂
-                46378,     -- 纯净魔精合剂
-                46379,     -- 石血合剂
-                40079,     -- 次级坚韧合剂
-                44939,     -- 次级抗性合剂
-                13511,     -- 精炼智慧合剂
+                46376, -- 冰霜巨龙合剂
+                46377, -- 无尽怒气合剂
+                46378, -- 纯净魔精合剂
+                46379, -- 石血合剂
+                40079, -- 次级坚韧合剂
+                44939, -- 次级抗性合剂
+                13511, -- 精炼智慧合剂
             }
         elseif ZL.IsWLK_80 then
             presetPotionIDs = {
-                40211,     -- 速度药水
-                40212,     -- 狂野魔法药水
-                40093,     -- 不灭药水
+                40211, -- 速度药水
+                40212, -- 狂野魔法药水
+                40093, -- 不灭药水
             }
             presetFlaskIDs = {
-                46376,     -- 冰霜巨龙合剂
-                46377,     -- 无尽怒气合剂
-                46378,     -- 纯净魔精合剂
-                46379,     -- 石血合剂
-                40079,     -- 次级坚韧合剂
-                44939,     -- 次级抗性合剂
-                13511,     -- 精炼智慧合剂
+                46376, -- 冰霜巨龙合剂
+                46377, -- 无尽怒气合剂
+                46378, -- 纯净魔精合剂
+                46379, -- 石血合剂
+                40079, -- 次级坚韧合剂
+                44939, -- 次级抗性合剂
+                13511, -- 精炼智慧合剂
             }
         elseif ZL.IsCTM then
             presetPotionIDs = {
-                58146,     -- 魔像之血药水
-                58145,     -- 托维尔药水
-                58091,     -- 火山药水
-                58090,     -- 土灵药水
+                58146, -- 魔像之血药水
+                58145, -- 托维尔药水
+                58091, -- 火山药水
+                58090, -- 土灵药水
             }
             presetFlaskIDs = {
-                58088,     -- 泰坦之力合剂
-                58087,     -- 风行合剂
-                58086,     -- 龙智合剂
-                58085,     -- 钢皮合剂
-                67438,     -- 流水合剂
+                58088, -- 泰坦之力合剂
+                58087, -- 风行合剂
+                58086, -- 龙智合剂
+                58085, -- 钢皮合剂
+                67438, -- 流水合剂
             }
         elseif ZL.IsMOP then
             presetPotionIDs = {
-                76095,     -- 魔古之力药水
-                76089,     -- 春华药水
-                76093,     -- 青龙药水
-                76090,     -- 高山药水
+                76095, -- 魔古之力药水
+                76089, -- 春华药水
+                76093, -- 青龙药水
+                76090, -- 高山药水
             }
             presetFlaskIDs = {
-                76088,     -- 冬噬合剂
-                76084,     -- 春华合剂
-                76085,     -- 暖阳合剂
-                76086,     -- 秋叶合剂
-                76087,     -- 大地合剂
+                76088, -- 冬噬合剂
+                76084, -- 春华合剂
+                76085, -- 暖阳合剂
+                76086, -- 秋叶合剂
+                76087, -- 大地合剂
             }
         elseif ZL.IsRetail then
             presetPotionIDs = {
-                241308, 241309,     -- 光明潜能
-                241296, 241297,     -- 狂热药水
-                241288, 241289,     -- 鲁莽药水
-                241292, 241293,     -- 狂放饮剂
-                271886, 271887,     -- 流光药剂
-                271889, 271890,     -- 诱惑秘药
+                241308, 241309, -- 光明潜能
+                241296, 241297, -- 狂热药水
+                241288, 241289, -- 鲁莽药水
+                241292, 241293, -- 狂放饮剂
+                271886, 271887, -- 流光药剂
+                271889, 271890, -- 诱惑秘药
             }
             presetFlaskIDs = {
-                241320, 241321,     -- 萨拉斯抗性合剂
-                241322, 241323,     -- 魔导师合剂
-                241324, 241325,     -- 血骑士合剂
-                241326, 241327,     -- 破碎残阳合剂
+                241320, 241321, -- 萨拉斯抗性合剂
+                241322, 241323, -- 魔导师合剂
+                241324, 241325, -- 血骑士合剂
+                241326, 241327, -- 破碎残阳合剂
             }
         elseif ZL.IsForever then
             presetFlaskIDs = {
