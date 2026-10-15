@@ -1246,11 +1246,10 @@ function ZL.SetFBCD(self, position, click, refresh)
             if hasAccountDropDown then
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, mainFrame)
                 dropDown:SetScale(.85)
-                dropDown:SetPoint("RIGHT", lastbt, "LEFT", 0, -4)
+                dropDown:SetPoint("RIGHT", lastbt, "LEFT", -5, -0)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
                 LibBG:UIDropDownMenu_SetText(dropDown, accountFilter or L["全部子账号"])
-                ZL.dropDownToggle(dropDown)
                 LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
                     local info = LibBG:UIDropDownMenu_CreateInfo()
                     info.text = L["全部子账号"]

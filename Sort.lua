@@ -359,11 +359,10 @@ function ZL.CreateRoleOverviewSortFrame(bt, update)
         serverText:SetText(L["服务器："])
 
         local dropDown = LibBG:Create_UIDropDownMenu(nil, f)
-        dropDown:SetPoint("LEFT", serverText, "RIGHT", -10, -4)
+        dropDown:SetPoint("LEFT", serverText, "RIGHT", 5, 0)
         dropDown:SetScale(.85)
         LibBG:UIDropDownMenu_SetWidth(dropDown, 105)
         LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
-        ZL.dropDownToggle(dropDown)
         f.realmDropDown = dropDown
         LibBG:UIDropDownMenu_Initialize(dropDown, function()
             for _, realmInfo in ipairs(GetRealmList()) do

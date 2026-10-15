@@ -280,6 +280,9 @@ ZL.Init(function()
             ZL.Once("FBCDchoice", 261007, function()
                 ZongLan.FBCDchoice["ULDtitan"] = 1
             end)
+            ZL.Once("FBCDchoice", 261015, function()
+                ZongLan.FBCDchoice.algalonKey = 1
+            end)
         elseif ZL.IsCTM then
         elseif ZL.IsMOP then
             ZL.Once("FBCDchoice", 260802, function()
@@ -321,6 +324,10 @@ ZL.Init(function()
                 ZongLan.MONEYchoice[3444] = 1
                 ZongLan.MONEYchoice[3445] = 1
                 ZongLan.MONEYchoice[3446] = 1
+            end)
+            ZL.Once("FBCDchoice", 261014, function()
+                ZongLan.FBCDchoice.UOK_M = 1
+                ZongLan.FBCDchoice.UOK_H = 1
             end)
         elseif ZL.IsForever then
             ZL.Once("MONEYchoice", 260918, function()
@@ -374,7 +381,7 @@ ZL.Init(function()
             },
             {
                 265570, 265569, 265568, 265567, 265566, 265565, 265564, 265563, 22632, -- 橙杖
-                265841,                                                                -- 片
+                22726, 265841,                                                         -- 片
             },
             {
                 17142, 269677, 269675, 269672, 269679, 269676, 269680, 269674, -- 橙匕
@@ -384,7 +391,7 @@ ZL.Init(function()
             {
                 46017, 270182, 270183, 270184, 270185, 270186,                 -- 奶橙锤
                 287189, 287184, 287185, 287186, 287187, 287188,                -- 物理橙锤
-                45038,                                                         -- 片
+                270187, 45038,                                                 -- 片
             },
         }
         ids_updateItem = {
@@ -598,6 +605,9 @@ ZL.Init(function()
             }
         elseif ZL.IsTitan then
             ZL.FBCDall_table = {
+                { name = "GLtitan", name2 = L["格鲁尔"], color = "00BFFF", fbId = 565,  type = "fb" },
+                { name = "MLtitan", name2 = L["玛胖"], color = "00BFFF", fbId = 544,  type = "fb" },
+                { name = "KZtitan", name2 = L["卡拉赞"], color = "00BFFF", fbId = 532,  type = "fb" },
                 { name = "ULDtitan", name2 = L["奥杜尔"], color = "00BFFF", fbId = 603, type = "fb" },
                 { name = "SWtitan", name2 = L["太阳井"], color = "00BFFF", fbId = 580, type = "fb" },
                 { name = "ZAtitan", name2 = L["祖阿曼"], color = "00BFFF", fbId = 568, type = "fb" },
@@ -623,6 +633,7 @@ ZL.Init(function()
                 -- { name = "dungeonMoney", name2 = L["随机本金币惩罚"], name3 = L["金币惩罚"], id = 1284288, color = "FF8C00", type = "buff" },
                 { name = "holiday", name2 = L["节日本"], color = "FF8C00", type = "quest" },
                 { name = "dayQuestCount", name2 = L["日常"], color = "FF8C00", type = "quest" },
+                { name = "algalonKey", name2 = L["观星钥匙"], color = "FF8C00", type = "quest" },
                 -- 专业
                 { name = "professionCD", name2 = L["专业技能CD"], color = "ADFF2F", type = "profession" },
                 { name = "ignore_alchemy_yanjiu", name2 = L["忽略炼金研究（需重载）"], color = "ADFF2F", type = "profession" },
@@ -633,8 +644,8 @@ ZL.Init(function()
                 { name = "ignore_forge_taitanjinggang", name2 = L["忽略泰坦精钢（需重载）"], color = "ADFF2F", type = "profession" },
                 { name = "ignore_tailor_bingchuanbeibao", name2 = L["忽略冰川背包（需重载）"], color = "ADFF2F", type = "profession" },
             }
-            ZL.FBCount = 16
-            ZL.dayQuestCount = 7
+            ZL.FBCount = 19
+            ZL.dayQuestCount = 8
             ZL.skillCount = 8
             -- 声望
             ZL.factionTbl = {
@@ -928,8 +939,9 @@ GameTooltip:SetCurrencyByID(697)
             }
             for _, p in ipairs({
                 {
+                    { name = 'UOK', id = 3095, mythicDiff = 233 }, -- The Unbinding of Kith'ix，使用弹性史诗难度
                     { name = 'VA', id = 3004 },
-                    { name = 'TG', id = 2987, mythicDiff = 233 }, -- 潮缚石窟使用弹性史诗难度
+                    { name = 'TG', id = 2987, mythicDiff = 233 },  -- 潮缚石窟使用弹性史诗难度
                 },
                 {
                     { name = 'Micosis', id = 1592 },

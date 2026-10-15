@@ -337,7 +337,7 @@ ZL.Init(function()
     end
 
     -- 日常任务
-    local holidayDungeonIDs = { 286, 285, 287, 288 }                           -- 火焰节、万圣节、美酒节、情人节
+    local holidayDungeonIDs = { 286, 285, 287, 288 }                                   -- 火焰节、万圣节、美酒节、情人节
     local holidayEventIDs = { [324] = true, [341] = true, [372] = true, [423] = true } -- 火焰节、万圣节、美酒节、情人节
     do
         ZongLan.QuestCD = ZongLan.QuestCD or {}
@@ -537,11 +537,26 @@ ZL.Init(function()
             end)
         end
 
+        -- 永久任务：登录时追溯，交任务后更新，不参与每日/每周重置
+        local permanentQuests = {}
+        if ZL.IsTitan then
+            permanentQuests[13818] = "algalonKey" -- 25人：英雄：奥尔加隆
+        end
+        local function SavePermanentQuest(questID)
+            local questName = permanentQuests[questID]
+            if not questName then return end
+            ZongLan.QuestCD[realmID][ZL.myName][questName] = {
+                name = questName,
+                questID = questID,
+                permanent = true,
+            }
+        end
 
         -- 交任务时触发
         ZL.RegisterEvent("QUEST_TURNED_IN", function(self, event, questID)
             UpdateDayQuest(questID)
             UpdateWeekQuest(questID)
+            SavePermanentQuest(questID)
             ZL.After(1, function()
                 UpdateDayQuestCount()
             end)
@@ -561,7 +576,9 @@ ZL.Init(function()
                                 end
                                 for _, questName in ipairs(questList) do
                                     local v = _G[db].QuestCD[realmID][player][questName]
-                                    if v.endtime and time < v.endtime then
+                                    if v.permanent then
+                                        -- 永久任务保留完成状态
+                                    elseif v.endtime and time < v.endtime then
                                         v.resettime = v.endtime - time
                                     else
                                         local skillID = GetQuestSkillID(questName)
@@ -613,6 +630,11 @@ ZL.Init(function()
                             break
                         end
                     end
+                end
+            end
+            for questID in pairs(permanentQuests) do
+                if C_QuestLog.IsQuestFlaggedCompleted(questID) then
+                    SavePermanentQuest(questID)
                 end
             end
             UpdateDayQuestCount()
@@ -1388,23 +1410,23 @@ ZL.Init(function()
     if not ZL.IsRetail then
         ZongLan.bag[realmID][ZL.myName].faction = ZongLan.bag[realmID][ZL.myName].faction or {}
 
-		local function SaveReputation()
-			for _, factionID in ipairs(ZL.factionTbl) do
-				local name, standingID, barMin, barMax, barValue
-				if ZL.IsForever then
-					local factionData = C_Reputation.GetFactionDataByID(factionID)
-					if factionData then
-						name = factionData.name
-						standingID = factionData.reaction
-						barMin = factionData.currentReactionThreshold
-						barMax = factionData.nextReactionThreshold
-						barValue = factionData.currentStanding
-					end
-				else
-					name, _, standingID, barMin, barMax, barValue = GetFactionInfoByID(factionID)
-				end
-				if name then
-					ZongLan.bag[realmID][ZL.myName].faction[factionID] = {
+        local function SaveReputation()
+            for _, factionID in ipairs(ZL.factionTbl) do
+                local name, standingID, barMin, barMax, barValue
+                if ZL.IsForever then
+                    local factionData = C_Reputation.GetFactionDataByID(factionID)
+                    if factionData then
+                        name = factionData.name
+                        standingID = factionData.reaction
+                        barMin = factionData.currentReactionThreshold
+                        barMax = factionData.nextReactionThreshold
+                        barValue = factionData.currentStanding
+                    end
+                else
+                    name, _, standingID, barMin, barMax, barValue = GetFactionInfoByID(factionID)
+                end
+                if name then
+                    ZongLan.bag[realmID][ZL.myName].faction[factionID] = {
                         name = name,
                         standingID = standingID,
                         currentValue = barValue - barMin,

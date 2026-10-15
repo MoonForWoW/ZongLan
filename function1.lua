@@ -1,6 +1,5 @@
 local AddonName, ns = ...
 
-local LibBG = ns.LibBG
 local L = ns.L
 local GetClassColor = ns.GetClassColor
 
@@ -200,16 +199,6 @@ ZL.OnUpdateTime(function(self,elapsed)
     end
 end)
  ]]
-
-------------------菜单：点文本也能打开菜单------------------
-function ZL.dropDownToggle(dropDown)
-    dropDown:SetScript("OnMouseDown", function(self)
-        if dropDown.isDisabled then return end
-        LibBG:ToggleDropDownMenu(nil, nil, self)
-        ZL.PlaySound(1)
-    end)
-    ZL.SkinDropDown(dropDown)
-end
 
 ------------------是国服或亚服吗------------------
 function ZL.IsCN()
@@ -1354,49 +1343,6 @@ function ZL.CreateButton(parent)
     bt:SetScript("OnEnter", nil)
     bt:SetScript("OnLeave", nil)
     return bt
-end
-
-function ZL.SkinDropDown(dropDown)
-    local borderAlpha = 1
-    local bt = dropDown.Button
-    bt:Hide()
-    dropDown.Left:Hide()
-    dropDown.Middle:Hide()
-    dropDown.Right:Hide()
-    dropDown.Text:ClearAllPoints()
-    dropDown.Text:SetPoint("TOPLEFT", 18, -8)
-    dropDown.Text:SetPoint("TOPRIGHT", -40, -8)
-    dropDown.Text:SetJustifyH("RIGHT")
-
-    local f = CreateFrame("Frame", nil, dropDown, "BackdropTemplate")
-    f:SetBackdrop({
-        bgFile = "Interface/ChatFrame/ChatFrameBackground",
-        edgeFile = "Interface/ChatFrame/ChatFrameBackground",
-        edgeSize = 1,
-
-    })
-    f:SetBackdropColor(0, 0, 0, 0.5)
-    f:SetBackdropBorderColor(.3, .3, .3, borderAlpha)
-    f:SetPoint("TOPLEFT", 15, 0)
-    f:SetPoint("BOTTOMRIGHT", -15, 7)
-    f:SetFrameLevel(dropDown:GetFrameLevel())
-    dropDown.bg = f
-
-    local tex = dropDown:CreateTexture("OVERLAY")
-    tex:SetPoint("TOPLEFT", bt, "TOPLEFT", 2, -2)
-    tex:SetPoint("BOTTOMRIGHT", bt, "BOTTOMRIGHT", -2, 2)
-    tex:SetTexture("Interface/AddOns/" .. AddonName .. "/Media/textures/arrow.tga")
-    tex:SetRotation(math.pi)
-    dropDown:HookScript("OnEnter", function(self)
-        if dropDown.isDisabled then return end
-        f:SetBackdropColor(r, g, b, 0.3)
-        f:SetBackdropBorderColor(r, g, b, borderAlpha)
-    end)
-    dropDown:HookScript("OnLeave", function(self)
-        if dropDown.isDisabled then return end
-        f:SetBackdropColor(0, 0, 0, 0.5)
-        f:SetBackdropBorderColor(.3, .3, .3, borderAlpha)
-    end)
 end
 
 function ZL.CreateHighLightAnim(self, w, h)
