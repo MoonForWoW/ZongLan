@@ -576,7 +576,7 @@ function ZL.GetDiffShortName(diff)
         return "|cff00BFFFN|r"
     elseif diff == 15 then
         return "|cffFF0000H|r"
-    elseif diff == 16 then
+    elseif diff == 16 or diff == 233 then
         return "|cffa335eeM|r"
     end
 end

@@ -9,7 +9,12 @@ ZL.Init(function()
     -- 多角色装备
     local mainFrame, leftFrame, rightFrame, slotTbl
     local iLevelColor
-    local enchantCount
+    local enchantCount = {}
+    local rangedEnchant = {
+        class = "HUNTER",
+        classID = 2,                                           -- 武器
+        subClassIDs = { [2] = true, [3] = true, [18] = true }, -- 弓、枪、弩
+    }
     local gemInfo = {}
     if ZL.IsVanilla then
         enchantCount = {
@@ -26,11 +31,9 @@ ZL.Init(function()
             INVTYPE_WEAPONMAINHAND = 1, -- 主手武器
             INVTYPE_WEAPONOFFHAND = 1,  -- 副手武器
             INVTYPE_SHIELD = 1,         -- 盾牌
-            INVTYPE_RANGED = 1,         -- 远程武器
+            INVTYPE_RANGED = rangedEnchant,
+            INVTYPE_RANGEDRIGHT = rangedEnchant,
             INVTYPE_CLOAK = 1,          -- 披风
-        }
-    elseif ZL.IsForever then
-        enchantCount = {
         }
     elseif ZL.IsTBC then
         enchantCount = {
@@ -47,7 +50,8 @@ ZL.Init(function()
             INVTYPE_WEAPONMAINHAND = 1, -- 主手武器
             INVTYPE_WEAPONOFFHAND = 1,  -- 副手武器
             INVTYPE_SHIELD = 1,         -- 盾牌
-            INVTYPE_RANGED = 1,         -- 远程武器
+            INVTYPE_RANGED = rangedEnchant,
+            INVTYPE_RANGEDRIGHT = rangedEnchant,
             INVTYPE_CLOAK = 1,          -- 披风
             INVTYPE_FINGER = { id = 333, level = 360 }
         }
@@ -66,19 +70,19 @@ ZL.Init(function()
             INVTYPE_WEAPONMAINHAND = 1, -- 主手武器
             INVTYPE_WEAPONOFFHAND = 1,  -- 副手武器
             INVTYPE_SHIELD = 1,         -- 盾牌
-            INVTYPE_RANGED = 1,         -- 远程武器
+            INVTYPE_RANGED = rangedEnchant,
+            INVTYPE_RANGEDRIGHT = rangedEnchant,
             INVTYPE_CLOAK = 1,          -- 披风
             INVTYPE_FINGER = { id = 333, level = 400 }
             -- INVTYPE_NECK = 1,           -- 项链
             -- INVTYPE_WAIST = 1,          -- 腰
             -- INVTYPE_HOLDABLE = 1,       -- 副手
-            -- INVTYPE_RANGEDRIGHT = 1,    -- 魔杖
         }
         gemInfo = {
             INVTYPE_WRIST = { id = 164, level = 400 }, -- 手腕
             INVTYPE_HAND = { id = 164, level = 400 },  -- 手
         }
-    else
+    elseif ZL.IsMOP then
         enchantCount = {
             -- INVTYPE_HEAD = 1,           -- 头
             INVTYPE_SHOULDER = 1,       -- 肩膀
@@ -93,17 +97,37 @@ ZL.Init(function()
             INVTYPE_WEAPONMAINHAND = 1, -- 主手武器
             INVTYPE_WEAPONOFFHAND = 1,  -- 副手武器
             INVTYPE_SHIELD = 1,         -- 盾牌
-            INVTYPE_RANGED = 1,         -- 远程武器
+            INVTYPE_RANGED = rangedEnchant,
+            INVTYPE_RANGEDRIGHT = rangedEnchant,
             INVTYPE_CLOAK = 1,          -- 披风
             INVTYPE_FINGER = { id = 333, level = 550 }
             -- INVTYPE_NECK = 1,           -- 项链
             -- INVTYPE_WAIST = 1,          -- 腰
             -- INVTYPE_HOLDABLE = 1,       -- 副手
-            -- INVTYPE_RANGEDRIGHT = 1,    -- 魔杖
         }
         gemInfo = {
             INVTYPE_WRIST = { id = 164, level = 550 }, -- 手腕
             INVTYPE_HAND = { id = 164, level = 550 },  -- 手
+        }
+    elseif ZL.IsRetail then
+        -- 正式服：至暗之夜，腿部包含魔线和护甲片。
+        enchantCount = {
+            INVTYPE_HEAD = 1,           -- 头
+            INVTYPE_SHOULDER = 1,       -- 肩膀
+            INVTYPE_CHEST = 1,          -- 胸
+            INVTYPE_ROBE = 1,           -- 胸
+            INVTYPE_LEGS = 1,           -- 腿
+            INVTYPE_FEET = 1,           -- 脚
+            INVTYPE_FINGER = 1,         -- 戒指，无专业要求
+            INVTYPE_2HWEAPON = 1,       -- 双手武器
+            INVTYPE_WEAPON = 1,         -- 单手武器
+            INVTYPE_WEAPONMAINHAND = 1, -- 主手武器
+            INVTYPE_WEAPONOFFHAND = 1,  -- 副手武器
+            INVTYPE_RANGED = rangedEnchant,
+            INVTYPE_RANGEDRIGHT = rangedEnchant,
+        }
+    elseif ZL.IsForever then
+        enchantCount = {
         }
     end
 
@@ -130,19 +154,25 @@ ZL.Init(function()
         end
         return count
     end
-    local function ItemNeedEnchant(equipLoc, skill)
+    local function ItemNeedEnchant(equipLoc, skill, class, classID, subClassID)
         local info = enchantCount[equipLoc]
         local _type = type(info)
         if _type == 'number' then
             return info
-        elseif _type == "table" and skill and skill[info.id] and skill[info.id].level >= info.level then
+        elseif _type == "table" then
+            if info.class and class ~= info.class then return false end
+            if info.classID and classID ~= info.classID then return false end
+            if info.subClassIDs and not info.subClassIDs[subClassID] then return false end
+            if info.id and not (skill and skill[info.id] and skill[info.id].level >= info.level) then
+                return false
+            end
             return 1
         end
         return false
     end
     local function ItemNeedGem(equipLoc, link, skill)
         local gemCount = GetGemCount(link)
-        if ZL.verOver3 and equipLoc == "INVTYPE_WAIST" then
+        if ZL.verOver3 and not ZL.IsRetail and equipLoc == "INVTYPE_WAIST" then
             gemCount = gemCount + 1
         elseif skill then
             local info = gemInfo[equipLoc]
@@ -152,7 +182,7 @@ ZL.Init(function()
         end
         return gemCount
     end
-    function ZL.GetEnchantInfo(link, skill)
+    function ZL.GetEnchantInfo(link, skill, class)
         if not link then return end
         local itemID, chant, gem1, gem2, gem3, gem4 = link:match("item:(%d+):(%d-):(%d-):(%d-):(%d-):")
         if itemID then itemID = tonumber(itemID) end
@@ -161,8 +191,8 @@ ZL.Init(function()
         if gem2 then gem2 = tonumber(gem2) end
         if gem3 then gem3 = tonumber(gem3) end
         if gem4 then gem4 = tonumber(gem4) end
-        local equipLoc = select(4, GetItemInfoInstant(itemID))
-        return chant, ItemNeedEnchant(equipLoc, skill), { gem1, gem2, gem3, gem4 }, ItemNeedGem(equipLoc, link, skill), equipLoc, itemID
+        local equipLoc, _, classID, subClassID = select(4, GetItemInfoInstant(itemID))
+        return chant, ItemNeedEnchant(equipLoc, skill, class, classID, subClassID), { gem1, gem2, gem3, gem4 }, ItemNeedGem(equipLoc, link, skill), equipLoc, itemID
     end
 
     local function CreateMainFrame()
@@ -604,7 +634,7 @@ ZL.Init(function()
             icon:AddMaskTexture(mask)
             local broder = f:CreateTexture(nil, "OVERLAY")
             broder:SetAllPoints()
-            broder:SetTexture(ns.Interface ..[[Media\icon\SocketBroder.blp]])
+            broder:SetTexture(ns.Interface .. [[Media\icon\SocketBroder.blp]])
             local alpha = .8
             if type == "chant" then
                 if iconTex then
@@ -631,7 +661,7 @@ ZL.Init(function()
             end
             wipe(bt.otherButtons)
             if not link then return end
-            local chant, noChant, gemTbl, gemCount, equipLoc = ZL.GetEnchantInfo(link, skill)
+            local chant, noChant, gemTbl, gemCount, equipLoc = ZL.GetEnchantInfo(link, skill, mainFrame.class)
             if chant then
                 if ZL.enchant[chant] then
                     local itemID = ZL.enchant[chant].itemID
@@ -745,8 +775,8 @@ ZL.Init(function()
     end
 
     function ZL.ShowEquipFrame(click, bt, isAccounts, realmID, player,
-                                colorplayer, level, class, iLevel, BiaoGeAIdb,
-                                BiaoGeAItalent, points, showRealmName)
+                               colorplayer, level, class, iLevel, BiaoGeAIdb,
+                               BiaoGeAItalent, points, showRealmName)
         local db
         if not BiaoGeAIdb then
             if isAccounts then

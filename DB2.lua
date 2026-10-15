@@ -929,7 +929,7 @@ GameTooltip:SetCurrencyByID(697)
             for _, p in ipairs({
                 {
                     { name = 'VA', id = 3004 },
-                    { name = 'TG', id = 2987 },
+                    { name = 'TG', id = 2987, mythicDiff = 233 }, -- 潮缚石窟使用弹性史诗难度
                 },
                 {
                     { name = 'Micosis', id = 1592 },
@@ -945,7 +945,7 @@ GameTooltip:SetCurrencyByID(697)
                             name2 = GetRealZoneText(fbs.id),
                             color = "00BFFF",
                             fbId = fbs.id,
-                            diff = hard[2],
+                            diff = hard[1] == 'M' and fbs.mythicDiff or hard[2],
                             type = "fb"
                         })
                     end
